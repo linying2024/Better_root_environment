@@ -1,5 +1,5 @@
-以下是一份双语版的免责声明：
-The following is a bilingual disclaimer:
+# 以下是一份双语版的免责声明：
+# The following is a bilingual disclaimer:
 
 ---
 
@@ -7,7 +7,7 @@ The following is a bilingual disclaimer:
 
 本Magisk模块（以下简称“本模块”）由 linying23333@github（以下简称“开发者”）独立开发并免费提供给广大用户。在使用本模块之前，请用户务必仔细阅读并理解以下免责声明。使用本模块即表示您已完全理解并接受本免责声明的所有内容，且同意遵守相关法律法规及本免责声明的各项规定。
 
-Important Notice:
+**Important Notice:**
 
 This Magisk module (hereinafter referred to as "the Module") is independently developed by linying23333@github (hereinafter referred to as "the Developer") and provided free of charge to users. Before using this Module, please carefully read and understand the following disclaimer. Using the Module indicates that you have fully understood and accepted all the contents of this disclaimer and agree to comply with relevant laws and regulations.
 
@@ -131,7 +131,7 @@ Please consider the above risk warnings and legal responsibilities carefully bef
 
 ---
 
-**linying23333@github**
-**2024/09/17**
+# **linying23333@github**
+# **2024/09/17**
 
 ---
