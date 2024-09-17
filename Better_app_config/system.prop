@@ -1,0 +1,7 @@
+# 此文件将由resetprop自动读取加载
+# 示例: 更改 dpi
+# ro.sf.lcd_density=410
+# vendor.display.lcd_density=410
+# 使用 # 开头将会被忽略，请在需要的行开头去掉 #
+
+#ro.boot.vbmeta.digest=ADECBC8919CD6B9370E029EB4CC5E502381FF58416396696C6F8EAD5D4571ECD

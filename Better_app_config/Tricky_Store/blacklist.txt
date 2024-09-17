@@ -1,0 +1,9 @@
+# 这里是黑名单，每行一个(不可以包含其他非包名的字符，末尾需要留一行空行)，#开头的会被忽略
+# 黑名单内的app包名当发现时会被从文件内删除
+# 格式例如:
+# com.demo.app1
+# com.demo.app2
+
+me.bmax.apatch
+com.coloros.codebook
+com.oplus.stdsp

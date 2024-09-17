@@ -1,0 +1,13 @@
+# Default_target
+com.google.android.gms
+io.github.vvb2060.keyattestation
+io.github.vvb2060.mahoshojo
+icu.nullptr.nativetest
+
+# Default_add_CheckApp_target
+com.reveny.nativecheck
+me.garfieldhan.holmes
+com.zhenxi.hunter
+
+# Default_add_App_target
+com.sankuai.meituan
