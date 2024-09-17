@@ -91,9 +91,9 @@ ManagerNumber=0
 
 # 检查 $KernelSUpath 是否可用
 if command -v "$KernelSUpath" &> /dev/null; then
-ManagerType="KernelSU"
-echo "发现了KernelSU命令行文件可用"
-ManagerNumber=$(( $ManagerNumber + 1 ))
+    ManagerType="KernelSU"
+    echo "发现了KernelSU命令行文件可用"
+    ManagerNumber=$(( $ManagerNumber + 1 ))
 fi
 
 # 检查 $APatchpath 是否可用
@@ -151,38 +151,15 @@ echo "@@@@@@@@@@@@@@@@@@@"
 # 验证完成删除验证文件
 find "$oldMODPATH" -type f -name "*.sha256" -exec rm -f {} +
 
-# 定义删除函数，接收两个参数
-delete_file() {
-    local search_dir="$1"  # 第一个参数：搜索目录
-    local file_pattern="$2"  # 第二个参数：文件名模式（可使用通配符）
-    local found=0  # 用于标记是否找到了文件
-
-    # 使用find命令查找文件，并通过while循环逐个处理
-    while IFS= read -r -d $'\0' file; do
-        # 标记为已找到文件
-        found=1
-        # 删除找到的文件
-        if ! rm -f "$file"; then
-            # 如果删除失败，则打印错误信息并返回非零值
-            echo "删除发生错误: $file" >&2
-            return 1
-        fi
-    echo "已尝试删除: $file"  # 打印已删除的文件
-    done < <(find "$search_dir" -type f -name "$file_pattern" -print0)
-
-    # 根据是否找到文件设置返回值
-    if [ "$found" -eq 0 ]; then
-        return 1  # 没有找到文件
-    else
-        return 0  # 找到了文件（并且成功删除）
-    fi
-}
-
-# 检查是否在Apatch或者KernelSU中安装,变量不存在则为在magisk安装
+# 检查是否在Apatch或者KernelSU中安装
 if [ -z "${KSU+set}" ] && [ -z "${APATCH+set}" ]; then
     if [[ "$MAGISK_VER_CODE" -lt "26402" ]]; then
-        # 调用函数删除可能不支持的文件
-        if delete_file "$oldMODPATH/modules" "*Zygisk-Next-1.1.0*.zip"; then
+        # 查找并检查是否有符合要求的文件
+        NoSupportZip=$(find "$MODPATH/modules" -type f -name "*Zygisk-Next-1.1.0*.zip")
+        # 检查变量是否非空
+        if [ -n "$NoSupportZip" ]; then
+            # 删除找到的文件
+            rm -f $NoSupportZip
             echo "*********************************************************"
             echo "发现Zygisk Next 1.1.0,您的面具版本不支持,已为您移除"
             if [[ "$ZYGISK_ENABLED" == "0" ]]; then
@@ -201,33 +178,48 @@ if [ -z "${KSU+set}" ] && [ -z "${APATCH+set}" ]; then
     fi
 
     ui_print "- Magisk 版本号: $MAGISK_VER_CODE"
-        if [ "$MAGISK_VER_CODE" -lt "27005" ]; then
-            # 查找并检查是否有符合要求的文件
-            if delete_file "$oldMODPATH/modules" "*Shamiko-1.1.1*.zip"; then
-                ui_print "*********************************************************"
-                ui_print "! 发现安装程序内可能含有Shamiko模块, 已为您移除。因为您的面具版本不支持"
-                ui_print "*********************************************************"
-            fi
-        fi
-else
-    if [ "$ManagerType" = "APatch" ]; then
+    if [ "$MAGISK_VER_CODE" -lt "27005" ]; then
         # 查找并检查是否有符合要求的文件
-        if delete_file "$oldMODPATH/modules" "*Shamiko-1.1.1*.zip"; then
-        echo "*********************************************************"
-        echo "发现安装程序内可能含有Shamiko模块, 已为您移除, APatch不支持Shamiko模块.请改用KP内核模块Cherish Peekaboo"
-        echo "*********************************************************"
+        NoSupportZip=$(find "$MODPATH/modules" -type f -name "*Shamiko*.zip")
+        # 检查变量是否非空
+        if [ -n "$NoSupportZip" ]; then
+            # 删除找到的文件
+            rm -f $NoSupportZip
+            ui_print "*********************************************************"
+            ui_print "! 发现安装程序内可能含有Shamiko模块, 已为您移除。因为您的面具版本不支持"
+            ui_print "*********************************************************"
         fi
     fi
 fi
 
-# APK安装
-echo "APK安装环节(1/3)"
-for file in "$oldMODPATH/apks"/*.apk; do
-    echo "安装apk文件 $file"
-    # 免root绕过的selinux限制的方法来着5ec1cff@github
-    # 使用默认启用 覆盖 允许测试包 允许降级 授权所有app权限
-    pm install -r -t -d -g "$file" < /dev/null 2>&1 | cat
-done
+if [ "$ManagerType" = "APatch" ]; then
+    # 查找并检查是否有符合要求的文件
+    NoSupportZip=$(find "$MODPATH/modules" -type f -name "*Shamiko*.zip")
+    # 检查变量是否非空
+    if [ -n "$NoSupportZip" ]; then
+        # 删除找到的文件
+        rm -f $NoSupportZip
+        echo "*********************************************************"
+        echo "发现安装程序内可能含有Shamiko模块, 已为您移除, APatch不支持Shamiko模块.请改用KP内核模块Cherish Peekaboo"
+        echo "*********************************************************"
+    fi
+fi
+ 
+# APK安装  
+echo "APK安装环节(1/3)"  
+oldSelinux=$(getenforce)  
+if [[ "$oldSelinux" == "Enforcing" ]]; then  
+    echo "发现当前selinux模式为强制模式,将暂时切换为宽容模式使安装保持成功"  
+    setenforce 0  
+fi  
+for file in "$MODPATH/apks"/*.apk; do  
+    echo "安装apk文件 $file"  
+    pm install -r -t -d -g "$file"  
+done  
+if [[ "$oldSelinux" == "Enforcing" ]]; then  
+    echo "还原selinux模式为强制模式"  
+    setenforce 1  
+fi
 
 # 模块安装
 echo "模块安装环节(2/3)"
