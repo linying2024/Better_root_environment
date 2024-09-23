@@ -9,7 +9,8 @@ json_file="$moddir/../tmp/HMA_config.json"
 whitelist="$moddir/whitelist.txt"
 blacklist="$moddir/blacklist.txt"
 excludelist="$moddir/excludelist.txt"
-filtered_apps="$moddir/../tmp/applist.txt"
+applist="$moddir/../tmp/applist.txt"
+temptext="$moddir/../tmp/temp.txt"
 
 # 强制等待android设备启动完成，防止未知错误
 echo "等待设备启动..."
@@ -39,15 +40,12 @@ blacklist_apps=$(cat "$blacklist" | grep -v '^#' | grep -v '^$')
 whitelist_apps=$(cat "$whitelist" | grep -v '^#' | grep -v '^$')
 excludelist_apps=$(cat "$excludelist" | grep -v '^#' | grep -v '^$')
 
-# 创建一个临时文件来存储排除名单的应用
-excludelist_tempfile=$(mktemp)
-echo "$excludelist_apps" > "$excludelist_tempfile"
-
+# 输出过滤后的文本
+echo "$excludelist_apps" > "$temptext"
 # 过滤排除名单中的app
-filtered_apps=$(grep -v "^$" "$applist" | grep -vwf "$excludelist_tempfile")
-
+filtered_apps=$(grep -v "^$" "$applist" | grep -vwf "$temptext")
 # 清理临时文件
-rm "$excludelist_tempfile"
+rm -f "$temptext"
 
 # 使用jq构建JSON数组
 blacklist_json=$(echo "$blacklist_apps" | jq -R . | jq -s '. | if length > 0 then . else null end')
@@ -73,8 +71,10 @@ jq -n --argjson blacklist "$blacklist_json" \
   }
 ' > "$json_file"
 
-# fix json
-echo "$(jq '.scope |= map(.value)' "$json_file")" > "$json_file"
+# 修复文件
+echo "$(jq '.scope |= (map(.value) | add)' "$json_file")"  > "$json_file"
+# 压缩json文件
+echo "$(jq -c '.' "$json_file")" > "$json_file"
 
 echo "JSON 文件已创建：$json_file"
 

@@ -1,6 +1,6 @@
 id=better_app_config
 name=更好的app配置
 version=v0.3.1
-versionCode=2024092218
+versionCode=2024092309
 author=linying
 description=使用管理器特性持续在后台等待app列表更新并自动生成完整的全局配置文件注入使用
