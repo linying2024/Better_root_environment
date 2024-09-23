@@ -5,3 +5,17 @@
 # 使用 # 开头将会被忽略，请在需要的行开头去掉 #
 
 #ro.boot.vbmeta.digest=ADECBC8919CD6B9370E029EB4CC5E502381FF58416396696C6F8EAD5D4571ECD
+
+# 修复bl锁定状态
+ro.boot.flash.locked=1
+ro.boot.verifiedbootstate=green
+ro.secureboot.lockstate=locked
+ro.boot.vbmeta.device_state=locked
+
+# momo隐藏项
+# 隐藏数据未加密挂载参数被修改
+ro.crypto.state=encrypted
+# 隐藏init.rc被修改
+init.svc.flash_recovery=stopped
+# 隐藏处于全局调试模式
+ro.debuggable=0

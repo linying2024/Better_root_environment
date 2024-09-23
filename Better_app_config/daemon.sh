@@ -5,6 +5,8 @@ echo "等待设备启动..."
 until [ -d "/sdcard/Android" ]; do echo "等待1s中..." && sleep 1; done
 echo "设备已启动" | tee Start_Done
 
+echo "强制等待 5s 后接着运行"
+sleep 5s
 # 尝试还原一部分参数
 resetprop ro.boot.flash.locked 1
 resetprop ro.boot.verifiedbootstate green
@@ -17,6 +19,26 @@ resetprop ro.boot.vbmeta.device_state locked
 #resetprop --delete persist.logd.size.crash
 #resetprop --delete persist.logd.size.main
 #resetprop -p --delete ro.dalvik.vm.native.bridge
+# 解决hunter检测到9.0版本隐藏api调用已开启和momo非SDK接口限制失效 by 漾焐泷@Coolapk
+# 常见由Fake Location导致
+settings delete global hidden_api_policy
+settings delete global hidden_api_policy_p_apps
+settings delete global hidden_api_policy_pre_p_apps
+settings delete global hidden_api_blacklist_exemptions
+# momo隐藏项
+# 隐藏数据未加密挂载参数被修改
+resetprop ro.crypto.state encrypted
+# 隐藏init.rc被修改
+resetprop init.svc.flash_recovery stopped
+# 隐藏处于全局调试模式
+resetprop ro.debuggable 0
+# 解决发现twrp文件夹
+rm -rf /data/media/0/rec
+rm -rf /data/media/rec
+mv -f /data/media/0/TWRP /data/media/0/rec
+mv -f /data/media/TWRP /data/media/rec
+mv -f /data/media/0/Fox /data/media/0/rec
+mv -f /data/media/Fox /data/media/rec
 
 # 设置当前文件夹
 moddir="${0%/*}"
@@ -30,7 +52,7 @@ fi
 
 main_code() {
   # 检查日志大小是否超过上限
-  if [ $(stat -c%s "$moddir/daemon.log") -le 500000 ]; then
+  if [ $(stat -c%s "$moddir/daemon.log") -ge 500000 ]; then
     echo "已经达到文件大小上限，清空文件"
     echo "# file size max! fill none" > "$moddir/daemon.log"
   fi
@@ -51,8 +73,8 @@ main_code() {
   echo "文件： $file" >> "$moddir/tmp/check.update.log"
 
 # 获取所有第三方应用的包名，并捕获可能的错误。然后保存到临时文件 
-echo "正在获取第三方应用包名..."
-pm_list_packages_output=$(pm list packages -3 2>&1)
+echo "正在免root获取第三方应用包名..."
+pm_list_packages_output=$(pm list packages -3 </dev/null 2>&1)
 
 if ! echo "$pm_list_packages_output" | grep -qE "^package:[a-zA-Z]"; then
   echo "错误：直接获取失败，尝试用root切换shell用户执行"
@@ -91,20 +113,29 @@ fi
 echo "app列表获取操作完成"
 
 echo "拉起其他依赖脚本"
-"$moddir/Hide_App_List/get_config.sh" &> "$moddir/tmp/hma.log" 2>&1 &
-"$moddir/Tricky_Store/get_config.sh" &> "$moddir/tmp/ts.log" 2>&1 &
+"$moddir/Hide_My_Applist/get_config.sh" &> "$moddir/tmp/Hide_My_Applist.log" 2>&1 &
+"$moddir/Tricky_Store/get_config.sh" &> "$moddir/tmp/Tricky_Store.log" 2>&1 &
 
   # 这里可以根据需要添加更多逻辑
 }
 
+# 设置初始描述
 action="power on! first running"
+path="$moddir"
+file="$moddir/daemon.sh"
+# 执行主代码
 main_code
 
+# 检查是否命令可用
+if ! command -v "$moddir/lib/inotifywait_arm" >/dev/null 2>&1; then
+  echo "无法调用 inotifywait_arm，退出执行"
+  return 2>/dev/null
+  exit 0>/dev/null
+fi
 # 使用inotifywait持续监听指定文件夹创建和删除事件
 "$moddir/lib/inotifywait_arm" -m -e create -e delete --format '%w%f %e %f' "$dir" | while read path action file; do
-
+  # 执行主代码
   main_code
-
 done
 
 return 2>/dev/null

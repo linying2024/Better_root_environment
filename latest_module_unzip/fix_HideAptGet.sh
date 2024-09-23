@@ -1,3 +1,6 @@
+# 解决hunter检测到9.0版本隐藏api调用已开启和momo非SDK接口限制失效 by 漾焐泷@Coolapk
+# 常见由Fake Location导致
+
 settings delete global hidden_api_policy
 settings delete global hidden_api_policy_p_apps
 settings delete global hidden_api_policy_pre_p_apps

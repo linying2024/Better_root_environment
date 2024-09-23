@@ -24,15 +24,20 @@
 
 ### 前置要求
 ##### 手动前往github下载对应版本的 Zygisk Next 和 Tricky Store 并放入对应压缩包文件夹内
-##### 1.将Zygisk Next放在压缩包的/modules文件夹内并改名为sha256的文件名
-##### 2.将Tricky Store放在压缩包的/modules/android10+文件夹内并改名为sha256的文件名
+##### Zygisk Next: [https://github.com/Dr-TSNG/ZygiskNext/releases]
+##### TrickyStore: [https://github.com/5ec1cff/TrickyStore/releases]
+##### 1.将对应的Zygisk Next版本放在压缩包的/modules文件夹内并改名为sha256的文件名
+##### 2.将对应的Tricky Store版本放在压缩包的/modules/android10+文件夹内并改名为sha256的文件名
 
 ### 安装流程
 ##### 1.下载最新模块, 并完成前置要求
 ##### 2.保证/data/adb文件夹是干净的 <sup>*推荐</sup>(改名重启即可)
 ##### 3.安装最新模块
-##### 4.手动导入最新生成的/sdcard/hma.json文件并进行相应的配置. 按照模块状态进行重启手机1~2次
+##### 4.手动导入最新生成的/sdcard/hma.json文件并进行相应的配置. 按照模块状态进行重启手机1~3次
 ##### 5.享受模块带来的便利吧!!!
+
+# 项目github主页
+# [https://github.com/linying2024/Better_root_environment]
 
 # 中国网盘克隆链接<sup>*更新不及时, 不推荐</sup>
 
@@ -65,7 +70,7 @@
 隐藏部分bootloader解锁痕迹,并辅助通过Google SafetyNet
 
 3.安装LSPosed1.8.0[https://github.com/LSPosed/LSPosed/releases/tag/v1.8.0]</br>
-3.安装LSPosed-npm-v7075_zygisk-cli(添加lsposed_mod的cli功能)<br></br>
+3.安装LSPosed-npm-v7075_zygisk-cli(添加lsposed_mod的webroot cli功能)<br></br>
 !(来自5ec1cff的Lsposed open npm改编)[https://github.com/5ec1cff]
 解决牛头人邪恶服务(2)的问题,并用于激活隐藏app列表Xposed插件模块
 
@@ -95,7 +100,7 @@ apk部分:
 3.安装改包名版隐藏应用列表v3.2
 解决牛头人邪恶服务(1)的问题, 并隐藏部分app列表
 
-4.安装破解MT管理器及其附属终端
+4.安装破解MT管理器及其附属v3.3终端
 
 细节操作
 

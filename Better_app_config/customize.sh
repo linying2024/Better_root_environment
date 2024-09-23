@@ -54,12 +54,16 @@ chmod -R 777 "$MODPATH"
 echo "复制默认tricky_store配置文件"
 ts_config_dir="/data/adb/tricky_store"
 mkdir -p $ts_config_dir
-cp -af "$MODPATH/Tricky_Store/keybox.xml" "/data/adb/tricky_store"
-cp -af "$MODPATH/Tricky_Store/target.txt" "/data/adb/tricky_store"
-cp -af "$MODPATH/Tricky_Store/spoof_build_vars" "/data/adb/tricky_store"
+cp -af "$MODPATH/Tricky_Store/keybox.xml" "$ts_config_dir"
+cp -af "$MODPATH/Tricky_Store/target.txt" "$ts_config_dir"
+cp -af "$MODPATH/Tricky_Store/spoof_build_vars" "$ts_config_dir"
 
 echo "释放LSPosed模块作用域配置文件"
-# 备份原文件夹
-mv -f /data/adb/lspd /data/adb/lspd.bak
+lspd_config_dir="/data/adb/lspd"
+mkdir -p "$lspd_config_dir"
+# 移除旧备份
+rm -rf "$lspd_config_dir/config.bak"
+# 备份原配置文件夹
+mv -f "$lspd_config_dir/config" "$lspd_config_dir/config.bak"
 # 释放文件
-cp -af "$MODPATH/lspd" "/data/adb"
+cp -af "$MODPATH/lspd/config" "$lspd_config_dir"

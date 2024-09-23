@@ -138,6 +138,99 @@ else
     exit 2
 fi
 
+# 获取当前运行的应用包名,并根据包名输出不同的提示信息
+case "$(dumpsys window | grep -o 'mCurrentFocus=.*' | cut -d' ' -f3 | cut -d'/' -f1)" in
+    io.github.huskydg.magisk)
+        echo "您正在使用 Magisk Delta 或 Kitsune Mask"
+        echo "该版本已不受支持,建议更换其他root方式"
+        # 音量键菜单
+        echo ""
+        echo " **************************************** "
+        echo ""
+        echo " ★请选择您希望的操作："
+        echo ""
+        echo " △按键无反应请更新管理器版本或联系作者"
+        echo ""
+        echo " ☞音量加 (音量 +)：无视警告继续安装"
+        echo ""
+        echo " ☞音量减 (音量 -)：退出安装"
+        echo ""
+        echo " ↕请根据提示按音量键进行选择"
+        echo ""
+        # 主循环
+        while true; do
+            # 使用 getevent 捕获按键事件
+            action=$(getevent -lqc 1 2>/dev/null) ;
+            # 检查是否捕获到按键事件
+            if [[ -n "${action}" ]]; then
+                # 判断按键事件
+                if [[ "${action}" == *"KEY_VOLUMEUP"* ]]; then
+                    echo " ✔已选择：无视警告继续安装"
+                    echo ""
+                    echo "警告!!!: 作者将不会受理该操作产生的后果, 请自行承担"
+                    sleep 0.5s
+                    break
+                elif [[ "${action}" == *"KEY_VOLUMEDOWN"* ]]; then
+                    echo " ✔已选择：退出安装"
+                    exit 127
+                fi
+            fi
+        done
+        echo ""
+        echo " **************************************** "
+        ;;
+    io.github.vvb2060.magisk)
+        echo "您正在使用 Magisk Alpha"
+        ;;
+    com.topjohnwu.magisk)
+        echo "您正在使用 Magisk"
+        ;;
+    me.weishu.kernelsu)
+        echo "您正在使用 KernelSU"
+        ;;
+    me.bmax.apatch)
+        echo "您正在使用 APatch"
+        ;;
+    *)
+        echo "无法识别您的获取root的类型. 您可能使用了Magisk的隐藏Magisk应用, 如果是这样您应该先还原Magisk应用再进行安装"
+        # 音量键菜单
+        echo ""
+        echo " **************************************** "
+        echo ""
+        echo " ★请选择您希望的操作："
+        echo ""
+        echo " △按键无反应请更新管理器版本或联系作者"
+        echo ""
+        echo " ☞音量加 (音量 +)：无视警告继续安装"
+        echo ""
+        echo " ☞音量减 (音量 -)：退出安装"
+        echo ""
+        echo " ↕请根据提示按音量键进行选择"
+        echo ""
+        # 主循环
+        while true; do
+            # 使用 getevent 捕获按键事件
+            action=$(getevent -lqc 1 2>/dev/null) ;
+            # 检查是否捕获到按键事件
+            if [[ -n "${action}" ]]; then
+                # 判断按键事件
+                if [[ "${action}" == *"KEY_VOLUMEUP"* ]]; then
+                    echo " ✔已选择：无视警告继续安装"
+                    echo ""
+                    echo "警告!!!: 作者将不会受理该操作产生的后果, 请自行承担"
+                    sleep 0.5s
+                    break
+                elif [[ "${action}" == *"KEY_VOLUMEDOWN"* ]]; then
+                    echo " ✔已选择：退出安装"
+                    exit 127
+                fi
+            fi
+        done
+        echo ""
+        echo " **************************************** "
+        ;;
+esac
+
 unzip -o "$ZIPFILE" -d "$oldMODPATH" >&2;
 echo "-------------------------"
 echo "文件列表:"

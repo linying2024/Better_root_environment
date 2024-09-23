@@ -1,0 +1,4 @@
+# 这里是只想被看到名单，每行一个不允许其他字符
+
+com.tencent.mm
+com.tencent.mobileqq

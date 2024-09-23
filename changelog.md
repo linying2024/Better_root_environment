@@ -1,8 +1,24 @@
+# v0.2
+### 功能性更新
+##### 1.增加对管理器类型的判断. 警告德尔塔用户不受支持
+##### 2.上传配置流程图片到github&gitlab
+##### 3.生成hma.json文件的脚本重构，完全使用jq生成，防止unix shell的不可预测行为并提升效率
+### 细节调整
+##### 1.将自动注入的lspd作用域配置文件更改为直接复制到lspd文件夹内
+##### 2.更新mt管理器到v5完成版
+##### 3.重新加回管理器内更新模块
+##### 4.重新加回cherish_peekaboo_1.3.1_test.kpm, 因为收到反馈1.4.2设备兼容性被降低
+##### 5.更新PlayIntegrityFix_v17.6
+##### 6.更新keybox秘钥,因为原秘钥已被吊销
+##### 7.模块描述更新了更清楚的描述
+### 问题修复
+##### 1.修复被遗漏的自动打开app
+##### 2.修复因为版本号太长超出int限制导致的magisk模块不显示内容(更改时间戳格式为yyyyMMddHH格式)
+
 # Demo_v0.1 Better_root_environment
 ## 将原 fast_config 正式更名为 Better_root_environment
 ### 功能性更新
 ##### 1.使用linux底层的inotify实现监听app列表,有新装app时自动更新秘钥注入和隐藏应用列表(仅支持arm处理器实时更新, x86仅支持开机更新)
-##### 2.
 ### 细节调整
 ##### 1.升级PlayIntegrityFix到17.5
 ##### 2.升级Tricky-Store到v1.2.0-RC1
@@ -14,7 +30,6 @@
 ##### 8.更换原piaopiao版mt管理器破解版为Modder Hub@Telegram的2024年9月16日版
 ### 问题修复
 ##### 1.修复默认开启shamiko白名单
-##### 2.
 
 
 
