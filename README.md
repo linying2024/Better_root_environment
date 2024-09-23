@@ -38,6 +38,8 @@
 
 # 项目github主页
 # [https://github.com/linying2024/Better_root_environment]
+# 项目gitlab主页
+# [https://gitlab.com/linying23333/Better_root_environment]
 
 # 中国网盘克隆链接<sup>*更新不及时, 不推荐</sup>
 
