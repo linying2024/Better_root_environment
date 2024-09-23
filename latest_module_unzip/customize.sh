@@ -139,7 +139,7 @@ else
 fi
 
 # 获取当前运行的应用包名,并根据包名输出不同的提示信息
-case "$(dumpsys window | grep -o 'mCurrentFocus=.*' | cut -d' ' -f3 | cut -d'/' -f1)" in
+case "$(dumpsys window | grep -o 'mCurrentFocus=.*' | cut -d'/' -f1 | awk '{print $NF}')" in
     io.github.huskydg.magisk)
         echo "您正在使用 Magisk Delta 或 Kitsune Mask"
         echo "该版本已不受支持,建议更换其他root方式"

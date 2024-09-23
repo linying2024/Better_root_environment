@@ -3,7 +3,7 @@ MODDIR=${0%/*}
 
 RebootCount=$(sed -n 's/^RebootCount=//p' $MODDIR/config.prop)
 # 使用sed替换参数
-sed -Ei 's/^description=(\[.*][[:space:]]*)?/description=[ ✘还需要重启 $RebootCount 次 ] /g' "$MODDIR/module.prop"
+sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ ✘还需要重启 $RebootCount 次 ] /g" "$MODDIR/module.prop"
 NeedRebootCount=$(( $RebootCount - 1 ))
 sed -i "s/^RebootCount=.*/RebootCount=$NeedRebootCount/" $MODDIR/config.prop
 
@@ -18,7 +18,7 @@ fi
 echo "等待设备启动..."
 until [ -d "/sdcard/Android" ]; do echo "等待1s中..." && sleep 1; done
 echo "设备已启动" | tee Start_Done
-sleep 15
+sleep 20
 # 隐藏应用列表包名
 HMAPackageName="fuck.app.check"
 am start -n $HMAPackageName/.MainActivityLauncher
