@@ -1,4 +1,8 @@
-#!/system/bin/sh
+#!/bin/sh
+
+# 设置终端中文支持
+export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
 
 # 强制等待android设备启动完成，防止未知错误
 echo "等待设备启动..."

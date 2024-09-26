@@ -27,6 +27,7 @@ com.youhu.laifu
 org.akanework.checker
 me.garfieldhan.holmes
 gr.nikolasspyr.integritycheck
+com.henrikherzig.playintegritychecker
 
 # app
 com.android.shell
@@ -108,16 +109,13 @@ me.jsonet.jshook
 com.absinthe.libchecker
 com.nihility.mipush
 com.vivian8421.mipushEnhance
-icu.nullptr.nativetest
 bin.mt.plus
 com.linux.permissionmanager
 io.ttletta.replacesu
 me.simplehook.normal
 github.tornaco.android.thanos
-us.electronic.usbng
 com.termux
 player.normal.np
-com.henrikherzig.playintegritychecker
 com.yxer.packageinstalles
 moe.shizuku.privileged.api
 org.telegram.group

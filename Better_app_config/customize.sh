@@ -8,6 +8,10 @@ LATESTARTSERVICE=true
 REPLACE="
 "
 
+# 设置终端中文支持
+export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
+
 enforce_install_from_magisk_app() {
   if $BOOTMODE; then
     ui_print "- 不受支持的环境，请在app内安装"

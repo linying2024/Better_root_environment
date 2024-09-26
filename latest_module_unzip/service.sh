@@ -1,4 +1,9 @@
-#!/system/bin/sh
+#!/bin/sh
+
+# 设置终端中文支持
+export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
+
 MODDIR=${0%/*}
 
 RebootCount=$(sed -n 's/^RebootCount=//p' $MODDIR/config.prop)
@@ -13,14 +18,13 @@ if [ "$RebootCount" -le 0 ]; then
     touch $MODDIR/remove
 fi
 
-
 # 强制等待android设备启动完成，防止未知错误
 echo "等待设备启动..."
 until [ -d "/sdcard/Android" ]; do echo "等待1s中..." && sleep 1; done
-echo "设备已启动" | tee Start_Done
-sleep 20
-# 隐藏应用列表包名
+echo "设备已启动"
+sleep 15
+# 启动隐藏应用列表app
 HMAPackageName="fuck.app.check"
-am start -n $HMAPackageName/.MainActivityLauncher
+monkey -p $HMAPackageName 1 &> "$MODDIR/apprunning.log" 2>&1 &
 
 exit 0

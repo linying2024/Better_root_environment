@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/bin/sh
+
+# 设置终端中文支持
+export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
 
 # 检查是否提供了一个目录作为参数,如果没有提供则使用当前目录
 if [ "$#" -eq 0 ]; then
