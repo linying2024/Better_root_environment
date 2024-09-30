@@ -25,6 +25,22 @@ echo "设备已启动"
 sleep 15
 # 启动隐藏应用列表app
 HMAPackageName="fuck.app.check"
+# 记录当前传感器状态
+sensor_state=$(settings get system accelerometer_rotation 2>&1 </dev/null | cat)
+# 调用sdk自带的测试工具启动APP
 monkey -p $HMAPackageName 1 &> "$MODDIR/apprunning.log" 2>&1 &
+echo "当前重力传感器的状态: $sensor_state"
+if [[ "$sensor_state" == "0" ]]; then
+  echo "已关闭自动旋转"
+  settings put system accelerometer_rotation 0 </dev/null 2>&1 | cat
+elif [[ "$sensor_state" == "1" ]]; then
+  echo "已开启自动旋转"
+  settings put system accelerometer_rotation 1 </dev/null 2>&1 | cat
+elif [[ "$sensor_state" == "null" ]]; then
+  echo "值不存在"
+  settings delete system accelerometer_rotation </dev/null 2>&1 | cat
+else
+  echo "未知的值"
+fi
 
 exit 0

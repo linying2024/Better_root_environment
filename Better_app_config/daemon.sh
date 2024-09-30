@@ -17,7 +17,7 @@ resetprop ro.boot.verifiedbootstate green
 resetprop ro.secureboot.lockstate locked
 resetprop ro.boot.vbmeta.device_state locked
 # 解决官改包秘钥哈希值问题 by南方的南鸭@Coolapk
-#resetprop -n ro.boot.vbmeta.digest 12ADA0F9EE76BB134F96ECB4FF5E882C92FC011C861584BB2AFD62AAF42C1C57
+#resetprop -n ro.boot.vbmeta.digest AD3BEA525340C96AB19D217EB7557B8033A70A8DE6D117A922BC0D3ECD89875F
 # LSPosed属性移除 by上官兮唐@Coolapk
 #resetprop --delete persist.logd.size
 #resetprop --delete persist.logd.size.crash
@@ -55,6 +55,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 main_code() {
+  echo ""
   # 检查日志大小是否超过上限
   if [ $(stat -c%s "$moddir/daemon.log") -ge 500000 ]; then
     echo "已经达到文件大小上限，清空文件"
@@ -77,13 +78,13 @@ main_code() {
   echo "文件： $file" >> "$moddir/tmp/check.update.log"
 
 # 获取所有第三方应用的包名，并捕获可能的错误。然后保存到临时文件 
-echo "正在免root获取第三方应用包名..."
-pm_list_packages_output=$(pm list packages -3 </dev/null 2>&1)
+echo "正在免root获取主用户第三方应用包名..."
+pm_list_packages_output=$(pm list packages --user 0 -3 </dev/null 2>&1)
 
 if ! echo "$pm_list_packages_output" | grep -qE "^package:[a-zA-Z]"; then
   echo "错误：直接获取失败，尝试用root切换shell用户执行"
-  echo "正在获取第三方应用包名..."
-  pm_list_packages_output="$(su 2000 -c 'pm list packages -3' 2>&1)"
+  echo "正在获取主用户第三方应用包名..."
+  pm_list_packages_output="$(su 2000 -c 'pm list packages --user 0 -3' 2>&1)"
 fi
 
 if ! echo "$pm_list_packages_output" | grep -qE "^package:[a-zA-Z]"; then
@@ -96,8 +97,8 @@ if ! echo "$pm_list_packages_output" | grep -qE "^package:[a-zA-Z]"; then
     setenforce 0
   fi
   # 获取所有第三方应用的包名，并捕获可能的错误。然后保存到临时文件
-  echo "正在获取第三方应用包名..."
-  pm_list_packages_output=$(pm list packages -3 2>&1)
+  echo "正在selinux宽容模式获取主用户第三方应用包名..."
+  pm_list_packages_output=$(pm list packages --user 0 -3 2>&1)
   # 如果之前是强制模式，现在还原
   if [ "$oldselinux" = "Enforcing" ]; then
     echo "恢复SELinux至强制模式"
@@ -115,6 +116,16 @@ else
 fi
 
 echo "app列表获取操作完成"
+
+# 当上一次的列表文件存在时判断内容是否一致
+if [[ -f "$moddir/tmp_old/applist.txt" ]]; then
+  if diff "$moddir/tmp_old/applist.txt" "$moddir/tmp/applist.txt" > /dev/null; then
+    echo "文件内容一致，退出本次调用"
+    return 1
+  else
+    echo "文件内容不一致，执行函数剩余代码"
+  fi
+fi
 
 echo "拉起其他依赖脚本"
 "$moddir/Hide_My_Applist/get_config.sh" &> "$moddir/tmp/Hide_My_Applist.log" 2>&1 &

@@ -46,11 +46,41 @@ echo "++++++++++++++++++++++++++++++++"
 
 echo "警告：请用户在使用本模块前慎重考虑上述风险提示及法律责任，确保自己具备足够的技术能力和风险意识。一旦使用本模块，即表示您已充分了解并自愿承担所有可能的风险和后果，包括但不限于因侵权问题而引发的法律责任"
 
-unzip -o "$ZIPFILE" -d "$MODPATH" >&2;
-echo "-------------------------"
-echo "文件列表:"
-echo "$(ls -R "$MODPATH")"
-echo "-------------------------"
+filepath="/data/adb/modules/better_app_config"
+if [[ -d "$filepath/" ]]; then
+  echo "保留配置更新"
+  unzip -o "$ZIPFILE" -d "$MODPATH" -x *.txt >&2;
+  rm -f "$MODPATH/Hide_My_Applist/whitelist.mode"
+  cp -arn $filepath/Tricky_Store/* "$MODPATH/Tricky_Store"
+  cp -arn $filepath/Hide_My_Applist/* "$MODPATH/Hide_My_Applist"
+  # 更新hash
+  if [[ "$(grep "#ro.boot.vbmeta.digest" $filepath/system.prop)" == "" ]]; then
+    echo "在 $filepath/system.prop 文件内发现已启用的重置hash"
+    hash=$(grep "ro.boot.vbmeta.digest" $filepath/system.prop | awk '{print $NF}' | awk '{print substr($0, length($0)-63, 64)}')
+  fi
+  if [[ "$(grep "#ro.boot.vbmeta.digest" $filepath/daemon.sh)" == "" ]]; then
+    echo "在 $filepath/daemon.sh 文件内发现已启用的重置hash"
+    hash=$(grep "ro.boot.vbmeta.digest" $filepath/daemon.sh | awk '{print $NF}' | awk '{print substr($0, length($0)-63, 64)}')
+  fi
+  if [[ ! "$hash" == "" ]]; then
+    echo "找到已设置的hash, 写入重置hash"
+    sed -i "s/AD3BEA525340C96AB19D217EB7557B8033A70A8DE6D117A922BC0D3ECD89875F/$hash/g" $MODPATH/daemon.sh
+    sed -i "s/AD3BEA525340C96AB19D217EB7557B8033A70A8DE6D117A922BC0D3ECD89875F/$hash/g" $MODPATH/system.prop
+    sed -i 's/^#resetprop -n ro.boot.vbmeta.digest/resetprop -n ro.boot.vbmeta.digest/'  $MODPATH/daemon.sh
+    sed -i 's/#ro.boot.vbmeta.digest/ro.boot.vbmeta.digest/g' $MODPATH/system.prop
+  fi
+else
+  unzip -o "$ZIPFILE" -d "$MODPATH" >&2;
+  echo "释放LSPosed模块作用域配置文件"
+  lspd_config_dir="/data/adb/lspd"
+  mkdir -p "$lspd_config_dir"
+  # 移除旧备份
+  rm -rf "$lspd_config_dir/config.bak"
+  # 备份原配置文件夹
+  mv -f "$lspd_config_dir/config" "$lspd_config_dir/config.bak"
+  # 释放文件
+  cp -af "$MODPATH/lspd/config" "$lspd_config_dir"
+fi
 
 echo "设置模块文件权限777"
 chmod -R 777 "$MODPATH"
@@ -59,15 +89,20 @@ echo "复制默认tricky_store配置文件"
 ts_config_dir="/data/adb/tricky_store"
 mkdir -p $ts_config_dir
 cp -af "$MODPATH/Tricky_Store/keybox.xml" "$ts_config_dir"
-cp -af "$MODPATH/Tricky_Store/target.txt" "$ts_config_dir"
+#cp -af "$MODPATH/Tricky_Store/target.txt" "$ts_config_dir"
 cp -af "$MODPATH/Tricky_Store/spoof_build_vars" "$ts_config_dir"
 
-echo "释放LSPosed模块作用域配置文件"
-lspd_config_dir="/data/adb/lspd"
-mkdir -p "$lspd_config_dir"
-# 移除旧备份
-rm -rf "$lspd_config_dir/config.bak"
-# 备份原配置文件夹
-mv -f "$lspd_config_dir/config" "$lspd_config_dir/config.bak"
-# 释放文件
-cp -af "$MODPATH/lspd/config" "$lspd_config_dir"
+echo "APK安装"  
+oldSelinux=$(getenforce)  
+if [[ "$oldSelinux" == "Enforcing" ]]; then  
+  echo "发现当前selinux模式为强制模式,将暂时切换为宽容模式使安装保持成功"  
+  setenforce 0  
+fi  
+for file in "$MODPATH/apks"/*.apk; do  
+  echo "安装apk文件 $file"  
+  pm install -r -t -d -g "$file"  
+done  
+if [[ "$oldSelinux" == "Enforcing" ]]; then  
+  echo "还原selinux模式为强制模式"  
+  setenforce 1  
+fi

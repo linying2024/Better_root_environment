@@ -16,7 +16,7 @@ io.github.a13e300.dsf_detector
 io.github.huskydg.memorydetector
 io.github.vvb2060.keyattestation
 io.github.vvb2060.mahoshojo
-icu.nullptr.nativetest
+icu.nullptr.nativetes
 icu.nullptr.applistdetector
 com.byxiaorun.detector
 com.zhenxi.hunter
@@ -27,7 +27,6 @@ com.youhu.laifu
 org.akanework.checker
 me.garfieldhan.holmes
 gr.nikolasspyr.integritycheck
-com.henrikherzig.playintegritychecker
 
 # app
 com.android.shell
@@ -98,24 +97,10 @@ com.gswxxn.xmsfnotichannel
 com.root.system
 com.sevtinge.cemiuiler
 com.merxury.blocker
-ma.DeviceOptimizeHelper
-com.at.a576356201193285
-com.at.a552360580763717
-com.vphonegaga.titan
-flar2.devcheck
-com.rosan.dhizuku
 com.kooritea.fcmfix
 me.jsonet.jshook
-com.absinthe.libchecker
 com.nihility.mipush
 com.vivian8421.mipushEnhance
-bin.mt.plus
 com.linux.permissionmanager
 io.ttletta.replacesu
 me.simplehook.normal
-github.tornaco.android.thanos
-com.termux
-player.normal.np
-com.yxer.packageinstalles
-moe.shizuku.privileged.api
-org.telegram.group

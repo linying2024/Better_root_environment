@@ -4,7 +4,8 @@
 # vendor.display.lcd_density=410
 # 使用 # 开头将会被忽略，请在需要的行开头去掉 #
 
-#ro.boot.vbmeta.digest=ADECBC8919CD6B9370E029EB4CC5E502381FF58416396696C6F8EAD5D4571ECD
+# 重置bl的验证hash
+#ro.boot.vbmeta.digest=AD3BEA525340C96AB19D217EB7557B8033A70A8DE6D117A922BC0D3ECD89875F
 
 # 修复bl锁定状态
 ro.boot.flash.locked=1
