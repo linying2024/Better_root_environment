@@ -9,6 +9,23 @@ moddir="${0%/*}"
 # 定义结果 JSON 文件的路径
 json_file="$moddir/../tmp/HMA_Config.json"
 
+# 检查系统上是否已经安装了可用的 jq 命令
+if ! command -v jq >/dev/null 2>&1; then
+# 检测当前的系统架构并设置调用自带的jq
+case "$(uname -m)" in
+  x86_64|i?86)
+    alias jq="$moddir/../lib/jq_i386"
+    ;;
+  *)
+    alias jq="$moddir/../lib/jq_armel"
+    ;;
+esac
+fi
+if ! command -v jq >/dev/null 2>&1; then
+  echo "无法调用 jq 命令"
+  exit
+fi
+
 # 使用jq尝试解析JSON文件，并检查其退出状态码
 # 如果jq解析失败，它将返回一个非零退出状态码
 if ! jq -e . "$json_file" > /dev/null 2>&1; then

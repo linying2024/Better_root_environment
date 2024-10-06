@@ -44,29 +44,34 @@ resetprop ro.boot.vbmeta.device_state locked
 #resetprop --delete persist.logd.size.main
 #resetprop -p --delete ro.dalvik.vm.native.bridge
 
-# 检查模块是否存在，否则退出该脚本
-if [ ! -d "/data/adb/modules/tricky_store" ] && [ ! -d "/data/adb/modules_update/tricky_store" ]; then
-  echo "*********************************************************"
-  echo "! 未找到已经安装的 tricky_store !"
-  echo "! 请先安装 tricky_store 后执行"
-  echo "*********************************************************"
-  exit 2
-fi
-
-if [ -f "/data/adb/modules/tricky_store/disable" ]; then
-  echo "*********************************************************"
-  echo "! tricky_store是关闭的 !"
-  echo "! 请先打开 tricky_store 后再执行"
-  echo "*********************************************************"
-  exit 2
-fi
-
-if [ -f "/data/adb/modules/tricky_store/remove" ]; then
-  echo "*********************************************************"
-  echo "! tricky_store 即将被移除 !"
-  echo "! 请重新安装 tricky_store 后再执行"
-  echo "*********************************************************"
-  exit 2
+# 检查是否以root权限执行
+if [ "$(id -u)" -ne 0 ]; then
+  echo "警告：未以root权限执行，接下来的操作可能失败"
+else
+  # 检查模块是否存在，否则退出该脚本
+  if [ ! -d "/data/adb/modules/tricky_store" ] && [ ! -d "/data/adb/modules_update/tricky_store" ]; then
+    echo "*********************************************************"
+    echo "! 未找到已经安装的 tricky_store !"
+    echo "! 请先安装 tricky_store 后执行"
+    echo "*********************************************************"
+    exit 2
+  fi
+  
+  if [ -f "/data/adb/modules/tricky_store/disable" ]; then
+    echo "*********************************************************"
+    echo "! tricky_store是关闭的 !"
+    echo "! 请先打开 tricky_store 后再执行"
+    echo "*********************************************************"
+    exit 2
+  fi
+  
+  if [ -f "/data/adb/modules/tricky_store/remove" ]; then
+    echo "*********************************************************"
+    echo "! tricky_store 即将被移除 !"
+    echo "! 请重新安装 tricky_store 后再执行"
+    echo "*********************************************************"
+    exit 2
+  fi
 fi
 
 # 封装写入文件的函数
@@ -116,22 +121,42 @@ if [ ! -s "$blacklist_file" ]; then
   done < "$temp_file_path"
 else
   echo "正在处理黑名单..."
-  while IFS= read -r app || [ -n "$app" ]; do
-    # 初始化变量不为黑名单内
-    is_blacklisted=false
-    while IFS= read -r black_app || [ -n "$black_app" ]; do
-      if [ ! "${black_app:0:1}" = "#" ] && [ -n "$black_app" ]; then
-        if [ "$app" = "$black_app" ]; then
-          # 发现处于黑名单内，设置是黑名单app
-          is_blacklisted=true
-          break
+  # 调用dex过滤排除名单中的app
+  filtered_apps=$(dalvikvm -cp "$moddir/../lib/FilterText.dex" FilterText -args "$temp_file_path" "$blacklist_file")
+  if [[ -z "$filtered_apps" ]]; then
+    echo "dex过滤失败，采用第二种办法"
+    while IFS= read -r app || [ -n "$app" ]; do
+      # 初始化变量不为黑名单内
+      is_blacklisted=false
+      while IFS= read -r black_app || [ -n "$black_app" ]; do
+        if [ ! "${black_app:0:1}" = "#" ] && [ -n "$black_app" ]; then
+          if [ "$app" = "$black_app" ]; then
+            # 发现处于黑名单内，设置是黑名单app
+            is_blacklisted=true
+            break
+          fi
         fi
+      done < "$blacklist_file"
+      if [ "$is_blacklisted" = false ] && [ -n "$app" ]; then
+        write "$app"
       fi
-    done < "$blacklist_file"
-    if [ "$is_blacklisted" = false ] && [ -n "$app" ]; then
-      write "$app"
+    done < "$temp_file_path"
+  else
+    echo "调用dex过滤成功，检查tee开关状态"
+    echo "$filtered_apps" > "$target_file_path.bak"
+    if [[ "$tee_broken" == "yes" ]]; then
+      while IFS= read -r app || [ -n "$app" ]; do
+        if [ -n "$app" ]; then
+          write "$app"
+        fi
+      done < "$target_file_path.bak"
+    else
+      # 直接写入
+      write "$filtered_apps"
     fi
-  done < "$temp_file_path"
+    # 删除临时文件
+    rm -f "$target_file_path.bak"
+  fi
 fi
 
 # 打印分隔符
@@ -139,12 +164,10 @@ echo "#BlackListDone" >> "$target_file_path"
 
 echo "生成配置文件操作完成"
 
-# 保证文件夹存在
-mkdir -p "$CONFIG_DIR"
-# 备份并复制配置文件
-mv -f "$CONFIG_DIR/target.txt" "$CONFIG_DIR/target.txt.bak"
-cp -f "$target_file_path" "$CONFIG_DIR/target.txt"
-
-echo "配置文件已经尝试复制到模块配置文件目录"
+if [[ -f "$moddir/../tmp/target.txt" ]]; then
+  echo "配置文件存在, 拉起文件替换脚本"
+  "$moddir/replace.sh" &> "$moddir/../tmp/tricky_store_replace.log" 2>&1 &
+fi
 
 return 2>/dev/null
+exit 2</dev/null

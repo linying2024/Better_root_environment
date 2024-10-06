@@ -33,7 +33,7 @@ settings delete global hidden_api_blacklist_exemptions
 # 隐藏数据未加密挂载参数被修改
 resetprop ro.crypto.state encrypted
 # 隐藏init.rc被修改
-resetprop init.svc.flash_recovery stopped
+#resetprop init.svc.flash_recovery stopped
 # 隐藏处于全局调试模式
 resetprop ro.debuggable 0
 # 解决发现twrp文件夹

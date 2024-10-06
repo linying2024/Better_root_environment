@@ -47,12 +47,26 @@ echo "++++++++++++++++++++++++++++++++"
 echo "警告：请用户在使用本模块前慎重考虑上述风险提示及法律责任，确保自己具备足够的技术能力和风险意识。一旦使用本模块，即表示您已充分了解并自愿承担所有可能的风险和后果，包括但不限于因侵权问题而引发的法律责任"
 
 filepath="/data/adb/modules/better_app_config"
-if [[ -d "$filepath/" ]]; then
+# 解压模块到模块文件夹
+unzip -o "$ZIPFILE" -d "$MODPATH" >&2;
+# 检查是不是安装过
+if [[ -d "$filepath" ]]; then
   echo "保留配置更新"
-  unzip -o "$ZIPFILE" -d "$MODPATH" -x *.txt >&2;
+  # 把所有.txt结尾的配置文件移动到临时文件夹
+  find "$MODPATH" -name "*.txt" -exec sh -c '
+    file="{}";
+    dir="$TMPDIR/$(dirname "{}")";
+    mkdir -p "$dir";
+    mv "$file" "$dir";
+  ' \;
+  # 强制删除白名单标记文件
   rm -f "$MODPATH/Hide_My_Applist/whitelist.mode"
+  # 尝试取回所有可能的配置文件(但是不覆盖文件)
   cp -arn $filepath/Tricky_Store/* "$MODPATH/Tricky_Store"
   cp -arn $filepath/Hide_My_Applist/* "$MODPATH/Hide_My_Applist"
+  # 把没有的配置文件补上
+  cp -arn $TMPDIR/Tricky_Store/* "$MODPATH/Tricky_Store"
+  cp -arn $TMPDIR/Hide_My_Applist/* "$MODPATH/Hide_My_Applist" 
   # 更新hash
   if [[ "$(grep "#ro.boot.vbmeta.digest" $filepath/system.prop)" == "" ]]; then
     echo "在 $filepath/system.prop 文件内发现已启用的重置hash"
@@ -70,7 +84,6 @@ if [[ -d "$filepath/" ]]; then
     sed -i 's/#ro.boot.vbmeta.digest/ro.boot.vbmeta.digest/g' $MODPATH/system.prop
   fi
 else
-  unzip -o "$ZIPFILE" -d "$MODPATH" >&2;
   echo "释放LSPosed模块作用域配置文件"
   lspd_config_dir="/data/adb/lspd"
   mkdir -p "$lspd_config_dir"

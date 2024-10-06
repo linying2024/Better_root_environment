@@ -1,0 +1,7 @@
+# 务必安装java8和配套dx生成器
+# 生成class文件
+javac FilterText.java
+# 生成dex文件
+dx --dex --output=FilterText.dex FilterText.class
+# 正确的bash调用方法
+dalvikvm -cp FilterText.dex FilterText -args <要执行过滤的文件> <过滤掉的字符串列表>

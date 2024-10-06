@@ -36,10 +36,10 @@
 ##### 4.手动导入最新生成的/sdcard/hma.json文件并进行相应的配置. 按照模块状态进行重启手机1~3次
 ##### 5.享受模块带来的便利吧!!!
 
-# 项目github主页
-# [https://github.com/linying2024/Better_root_environment]
-# 项目gitlab主页
-# [https://gitlab.com/linying23333/Better_root_environment]
+## 项目github主页
+#### [https://github.com/linying2024/Better_root_environment]
+## 项目gitlab主页
+#### [https://gitlab.com/linying23333/Better_root_environment]
 
 # 中国网盘克隆链接<sup>*更新不及时, 不推荐</sup>
 
@@ -65,15 +65,14 @@
 
 系统模块部分:
 
-1.尝试安装Zygisk-Next-1.1.0[https://github.com/Dr-TSNG/ZygiskNext/releases/tag/v1.1.0]
+1.尝试安装Zygisk-Next [https://github.com/Dr-TSNG/ZygiskNext/releases]
 解决牛头人发现注入的问题
 
-2.安装PlayIntegrityFix-17.5[https://github.com/chiteroman/PlayIntegrityFix/releases/tag/v17.5]
+2.安装PlayIntegrityFix[https://github.com/chiteroman/PlayIntegrityFix/releases]
 隐藏部分bootloader解锁痕迹,并辅助通过Google SafetyNet
 
 3.安装LSPosed1.8.0[https://github.com/LSPosed/LSPosed/releases/tag/v1.8.0]</br>
-3.安装LSPosed-npm-v7075_zygisk-cli(添加lsposed_mod的webroot cli功能)<br></br>
-!(来自5ec1cff的Lsposed open npm改编)[https://github.com/5ec1cff]
+3.安装JingMatrix的LSPosed[https://github.com/JingMatrix/LSPosed]
 解决牛头人邪恶服务(2)的问题,并用于激活隐藏app列表Xposed插件模块
 
 4.安装safetynet-fix-v2.4.0_MOD[https://github.com/kdrag0n/safetynet-fix]
@@ -82,11 +81,11 @@
 伪装bl未解锁,默认将秘钥文件注入所有个人安装app,如有需要请修改自动配置列表模块
 [https://github.com/5ec1cff/TrickyStore/releases]
 
-5.安装sui-zygisk-v13.5.1[https://github.com/RikkaApps/Sui/releases/tag/v13.5.1]
+5.安装sui-zygisk[https://github.com/RikkaApps/Sui/releases]
 默认禁用,未来备用
 
-6.安装Shamiko-v1.1.1[https://github.com/LSPosed/LSPosed.github.io/releases/tag/shamiko-357]
-隐藏大部分root痕迹(APatch用户不安装,请手动安装cherish_peekaboo_1.4.2.kpm)
+6.安装Shamiko[https://github.com/LSPosed/LSPosed.github.io/releases]
+隐藏大部分root痕迹(APatch用户不安装,请手动安装cherish_peekaboo.kpm)
 
 7.安装SelinuxHide </br>
 默认不启用防止暴露更多root痕迹
@@ -95,11 +94,11 @@
 8.安装自动配置辅助模块, 实现自动更新app注入列表
 
 apk部分:
-1.安装爱玩机工具箱S-22.0.9.3及其辅助插件
+1.安装爱玩机工具箱及其辅助插件
 
 2.安装第三方酷安c001apk_540265e[460]
 
-3.安装改包名版隐藏应用列表v3.2
+3.安装改包名版隐藏应用列表
 解决牛头人邪恶服务(1)的问题, 并隐藏部分app列表
 
 4.安装破解MT管理器及其附属v3.3终端

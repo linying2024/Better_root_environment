@@ -17,6 +17,6 @@ ro.boot.vbmeta.device_state=locked
 # 隐藏数据未加密挂载参数被修改
 ro.crypto.state=encrypted
 # 隐藏init.rc被修改
-init.svc.flash_recovery=stopped
+#init.svc.flash_recovery=stopped
 # 隐藏处于全局调试模式
 ro.debuggable=0
