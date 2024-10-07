@@ -2,7 +2,7 @@
 
 ## 1. 定义 (Definitions)
 
-- “**原项目**” ("Original Work"): 指本许可证所涵盖的软件、文档或其他作品。(Means the software, documentation, or other work covered by this License.)
+- “**原项目**” ("Original Work"): 指本许可证所涵盖的软件、文档或其他作品，不含附带的其他软件包。(Means the software, documentation, or other work covered by this License.Excluding other accompanying software packages)
 - “**派生作品**” ("Derivative Work"): 指基于原项目或其任何部分创作的作品。(Means a work based on the Original Project or any part thereof.)
 
 ## 2. 再分发和修改 (Redistribution and Modification)
