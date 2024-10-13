@@ -16,7 +16,7 @@ io.github.a13e300.dsf_detector
 io.github.huskydg.memorydetector
 io.github.vvb2060.keyattestation
 io.github.vvb2060.mahoshojo
-icu.nullptr.nativetes
+icu.nullptr.nativetest
 icu.nullptr.applistdetector
 com.byxiaorun.detector
 com.zhenxi.hunter
@@ -38,6 +38,8 @@ com.coderstory.toolkit
 com.omarea.vtools
 
 
+github.tornaco.android.thanos
+com.yuk.fuckMiuiThemeManager
 io.github.lsposed.disableflagsecure
 com.aide.ul.zh
 com.mindows.toolbox

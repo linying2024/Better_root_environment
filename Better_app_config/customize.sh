@@ -8,10 +8,6 @@ LATESTARTSERVICE=true
 REPLACE="
 "
 
-# 设置终端中文支持
-export LANG=zh_CN.UTF-8
-export LC_ALL=zh_CN.UTF-8
-
 enforce_install_from_magisk_app() {
   if $BOOTMODE; then
     ui_print "- 不受支持的环境，请在app内安装"
@@ -44,7 +40,9 @@ echo "- 当前运行位数: $(uname -m)"
 echo "- linux内核版本名: $(uname -r)"
 echo "++++++++++++++++++++++++++++++++"
 
+echo "-------------------------"
 echo "警告：请用户在使用本模块前慎重考虑上述风险提示及法律责任，确保自己具备足够的技术能力和风险意识。一旦使用本模块，即表示您已充分了解并自愿承担所有可能的风险和后果，包括但不限于因侵权问题而引发的法律责任"
+echo "-------------------------"
 
 filepath="/data/adb/modules/better_app_config"
 # 解压模块到模块文件夹
@@ -72,7 +70,7 @@ if [[ -d "$filepath" ]]; then
     echo "在 $filepath/system.prop 文件内发现已启用的重置hash"
     hash=$(grep "ro.boot.vbmeta.digest" $filepath/system.prop | awk '{print $NF}' | awk '{print substr($0, length($0)-63, 64)}')
   fi
-  if [[ "$(grep "#ro.boot.vbmeta.digest" $filepath/daemon.sh)" == "" ]]; then
+  if [[ "$(grep "#resetprop -n ro.boot.vbmeta.digest" $filepath/daemon.sh)" == "" ]]; then
     echo "在 $filepath/daemon.sh 文件内发现已启用的重置hash"
     hash=$(grep "ro.boot.vbmeta.digest" $filepath/daemon.sh | awk '{print $NF}' | awk '{print substr($0, length($0)-63, 64)}')
   fi
@@ -104,6 +102,10 @@ mkdir -p $ts_config_dir
 cp -af "$MODPATH/Tricky_Store/keybox.xml" "$ts_config_dir"
 #cp -af "$MODPATH/Tricky_Store/target.txt" "$ts_config_dir"
 cp -af "$MODPATH/Tricky_Store/spoof_build_vars" "$ts_config_dir"
+
+# 设置终端中文支持
+export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
 
 echo "APK安装"  
 oldSelinux=$(getenforce)  

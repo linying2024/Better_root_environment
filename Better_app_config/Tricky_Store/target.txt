@@ -1,5 +1,7 @@
 # Default_target
+com.google.gms
 com.google.android.gms
+com.google.android.gsf
 io.github.vvb2060.keyattestation
 io.github.vvb2060.mahoshojo
 icu.nullptr.nativetest

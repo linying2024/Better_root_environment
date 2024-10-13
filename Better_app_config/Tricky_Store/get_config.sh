@@ -152,7 +152,7 @@ else
       done < "$target_file_path.bak"
     else
       # 直接写入
-      write "$filtered_apps"
+      echo "$filtered_apps" >> "$target_file_path"
     fi
     # 删除临时文件
     rm -f "$target_file_path.bak"

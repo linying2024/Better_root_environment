@@ -5,3 +5,5 @@
 # com.demo.app2
 
 com.google.gms
+com.google.android.gms
+com.google.android.gsf
