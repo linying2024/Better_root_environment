@@ -33,14 +33,21 @@ echo "当前重力传感器的状态: $sensor_state"
 if [[ "$sensor_state" == "0" ]]; then
   echo "已关闭自动旋转"
   settings put system accelerometer_rotation 0 </dev/null 2>&1 | cat
+  content insert --uri content://settings/system --bind name:s:accelerometer_rotation --bind value:i:0 </dev/null 2>&1 | cat
 elif [[ "$sensor_state" == "1" ]]; then
   echo "已开启自动旋转"
-  settings put system accelerometer_rotation 1 </dev/null 2>&1 | cat
 elif [[ "$sensor_state" == "null" ]]; then
   echo "值不存在"
-  settings delete system accelerometer_rotation </dev/null 2>&1 | cat
 else
   echo "未知的值"
 fi
+
+# 创建空json让辅助模块正常运行(如果不使用隐藏应用列表报错为正常)
+filepath=/data/system/hide_my_applist_*
+cd $filepath
+mv -f config.json config.json.bak
+echo "{}" > config.json
+chown 9997:9997 config.json
+chmod 7777 config.json
 
 exit 0

@@ -1,0 +1,16 @@
+{
+  "name": "kernelsu_webui",
+  "version": "demo0.1",  
+  "description": "",  
+  "source": "src/index.html",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build"
+  },
+  "devDependencies": {
+    "yarn": "^1.22.22"
+  },
+  "dependencies": {
+    "parcel": "^2.12.0"
+  }
+}

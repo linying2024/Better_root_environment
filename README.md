@@ -111,4 +111,4 @@ apk部分:
 
 1.自动释放已配置的LSPosed模块作用域
 
-2.自动生成预配置黑名单的隐藏应用列表[https://github.com/5ec1cff/Hide-My-Applist/blob/master/README_zh_CN.md]配置文件到/sdcard的hma.json文件中
+2.自动生成预配置黑名单的隐藏应用列表 <https://github.com/5ec1cff/Hide-My-Applist/blob/master/README_zh_CN.md> 配置文件到/sdcard的hma.json文件中

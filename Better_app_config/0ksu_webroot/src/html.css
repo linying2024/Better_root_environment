@@ -1,0 +1,98 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #343a40;
+}
+
+.card {
+  margin-bottom: 15px;
+  border: 1px solid #e3e6f0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background-color: #bcbdbe;
+  color: #ffffff;
+  padding: 10px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.card-body {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.button-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px; /* 设置按钮之间的间距 */
+}
+
+.button-container button {
+  flex-grow: 1; /* 允许按钮在空间允许的情况下增长 */
+  overflow: hidden; /* 隐藏溢出的文本 */
+  text-overflow: ellipsis; /* 显示省略号 */
+  min-width: 60px; /* 设置按钮的最小宽度 */
+  max-width: 300px; /* 设置按钮的最大宽度 */
+  font-size: 14px; /* 设置按钮的字体大小 */
+  word-wrap: break-word; /* 允许文本在按钮内换行 */
+  white-space: normal; /* 允许文本换行 */
+  text-align: center; /* 使文本居中显示 */
+}
+
+.card-body p {
+  max-width: 80%;
+  margin: 5px 0;
+}
+
+.card-body .input-container {
+  display: flex;
+  gap: 10px;
+}
+
+.log-body {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 4px;
+  margin-left: -40px;
+}
+
+/* 媒体查询，针对不同屏幕尺寸调整按钮的字体大小 */
+@media (max-width: 768px) {
+  .button-container button {
+    font-size: 12px; /* 在较小屏幕上减小字体大小 */
+  }
+}
+
+@media (max-width: 480px) {
+  .button-container button {
+    font-size: 10px; /* 在更小的屏幕上进一步减小字体大小 */
+  }
+}
