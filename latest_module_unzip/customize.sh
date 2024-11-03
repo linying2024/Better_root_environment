@@ -9,10 +9,6 @@ LATESTARTSERVICE=true
 REPLACE="
 "
 
-# 设置终端中文支持
-export LANG=zh_CN.UTF-8
-export LC_ALL=zh_CN.UTF-8
-
 # 设置当前命令别名
 KernelSUpath="/data/adb/ksud"
 APatchpath="/data/adb/apd"
@@ -57,7 +53,10 @@ if [[ "$(getprop ro.build.version.sdk)" -lt 27 ]]; then
   exit 2
 fi
 
-echo "警告：请用户在使用本模块前慎重考虑上述风险提示及法律责任，确保自己具备足够的技术能力和风险意识。一旦使用本模块，即表示您已充分了解并自愿承担所有可能的风险和后果，包括但不限于因侵权问题而引发的法律责任"
+echo "警告：请用户在使用本模块前慎重考虑上述风险提示及法律责任"
+echo "确保自己具备足够的技术能力和风险意识。一旦使用本模块，"
+echo "即表示您已充分了解并自愿承担所有可能的风险和后果，"
+echo "包括但不限于因侵权问题而引发的法律责任，以及设备工作异常等问题"
 sleep 3s
 
 # 备份变量
@@ -142,11 +141,20 @@ else
   exit 2
 fi
 
+# 设置解压路径
+unzippath="/sdcard"
+if [ "$ManagerType" = "APatch" ]; then
+  echo "解压APatch内核模块到 $unzippath"
+  cp -af "$oldMODPATH/KPM" "$unzippath"
+  echo "已完成复制操作, APatch用户请手动安装kpm内核模块"
+  sleep 3
+fi
+
 if [ -f "/sdcard/nomenu" ]; then
   echo "在/sdcard/发现文件nomenu，跳过音量键菜单"
 else
   # 获取当前运行的应用包名,并根据包名输出不同的提示信息
-  case "$(dumpsys window | grep -o 'mCurrentFocus=.*' | cut -d'/' -f1 | awk '{print $NF}')" in
+  case "$(dumpsys window | grep -o 'mCurrentFocus=[^;]*' | awk -F'[{}]' '{print $2}' | cut -d'/' -f1 | tr ' ' '\n' | awk 'END {print}' | awk '{print $NF}')" in
     io.github.huskydg.magisk)
       echo "您正在使用 Magisk Delta 或 Kitsune Mask"
       echo "该版本已不受支持,建议更换其他root方式"
@@ -245,6 +253,10 @@ echo "文件列表:"
 echo "$(ls -R "$oldMODPATH")"
 echo "-------------------------"
 
+# 设置终端中文支持
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 # 检查文件是否sha256错误
 echo "@@@@@@@@@@@@@@@@@@@"
 . "$oldMODPATH/test_sha256.sh" "$oldMODPATH"
@@ -255,14 +267,14 @@ find "$oldMODPATH" -type f -name "*.sha256" -exec rm -f {} +
 # 检查是否在Apatch或者KernelSU中安装
 if [ -z "${KSU+set}" ] && [ -z "${APATCH+set}" ]; then
   if [[ "$MAGISK_VER_CODE" -lt "26402" ]]; then
-    # 查找并检查是否有符合要求的文件
-    NoSupportZip=$(find "$MODPATH/modules" -type f -name "*Zygisk-Next-1.1.0*.zip")
+    # 查找并检查是否有zygisk next 1.1.0+
+    NoSupportZip=$(find "$MODPATH/modules" -type f -regex ".*/Zygisk-Next-[1-9]\+\.[1-9]+\+\.[0-9]+.*\.zip")
     # 检查变量是否非空
     if [ -n "$NoSupportZip" ]; then
       # 删除找到的文件
       rm -f $NoSupportZip
       echo "*********************************************************"
-      echo "发现Zygisk Next 1.1.0,您的面具版本不支持,已为您移除"
+      echo "发现Zygisk Next,您的面具版本不支持,已为您移除"
       if [[ "$ZYGISK_ENABLED" == "0" ]]; then
         echo "发现您的面具Zygisk未开启,请注意开启您的面具自带的Zygisk"
       fi
@@ -271,10 +283,15 @@ if [ -z "${KSU+set}" ] && [ -z "${APATCH+set}" ]; then
   else
     if [[ "$ZYGISK_ENABLED" == "1" ]]; then
       echo "*********************************************************"
-      echo "发现您的面具Zygisk已启用，请关闭它否则将继续无法安装"
+      echo "发现您的面具Zygisk已启用，请关闭它否则将工作异常"
       echo "*********************************************************"
-      abort "安装失败"
-      exit 2
+      if [ -f "/sdcard/nomenu" ]; then
+        echo "5秒后强制安装"
+        sleep 5s
+      else
+        abort "安装失败"
+        exit 2
+      fi
     fi
   fi
 
@@ -327,7 +344,7 @@ echo "模块安装环节(2/3)"
 # 使用for命令查找指定目录下的所有.zip文件
 for ZIPFILE in "$oldMODPATH/modules"/*.zip; do
   echo "安装模块文件 $ZIPFILE"
-  # 调用install_module(此处不需要指定文件,该特定环境默认安装当前循环文件)
+  # 调用管理器install_module
   install_module
   if [ $? -eq 0 ]; then
     echo "安装完成"
@@ -389,14 +406,7 @@ if [ -d "$oldMODPATH/../zygisk-sui" ] || [ -d "$oldMODPATH/../../modules/zygisk-
   touch "$oldMODPATH/../../modules/zygisk-sui/disable"
 fi
 
-# 设置解压路径
-unzippath="/sdcard"
-if [ "$ManagerType" = "APatch" ]; then
-  echo "解压APatch内核模块到 $unzippath"
-  cp -af "$oldMODPATH/KPM" "$unzippath"
-  echo "已完成复制操作, APatch用户请手动安装kpm内核模块"
-fi
-cp -af "$oldMODPATH/免责声明／Disclaimers.md" "$unzippath"
+cp -af "$oldMODPATH/*.md" "$unzippath"
 echo "安装操作完成，您可以准备重启了"
 
 # 检查文件是否存在

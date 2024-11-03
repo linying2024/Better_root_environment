@@ -37,8 +37,13 @@ com.byyoung.setting
 com.coderstory.toolkit
 com.omarea.vtools
 
-
+# Other
+com.github.tianma8023.xposed.smscode
+top.hookvip.pro
 github.tornaco.android.thanos
+cn.myflv.noactive
+LH.Pad.S
+LH.Pad.X
 com.yuk.fuckMiuiThemeManager
 io.github.lsposed.disableflagsecure
 com.aide.ul.zh

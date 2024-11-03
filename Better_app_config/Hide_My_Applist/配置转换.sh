@@ -30,19 +30,22 @@ fi
 
 # 检查系统上是否已经安装了可用的 jq 命令
 if ! command -v jq >/dev/null 2>&1; then
-  # 检测当前的系统架构并设置调用自带的jq
-  case "$(uname -m)" in
-    x86_64|i?86)
-      alias jq="$moddir/../lib/jq_i386"
-      ;;
-    *)
-      alias jq="$moddir/../lib/jq_armel"
-      ;;
-  esac
+# 检测当前的系统架构并设置调用自带的jq
+case "$(uname -m)" in
+  x86_64|i?86)
+    alias jq="$moddir/../lib/jq-linux-i386"
+    ;;
+  aarch64|arm64)
+    alias jq="$moddir/../lib/jq-linux-arm64"
+    ;;
+  *)
+    alias jq="$moddir/../lib/jq-linux-armel"
+    ;;
+esac
 fi
 if ! command -v jq >/dev/null 2>&1; then
-  echo "jq工具不存在，终止执行"
-  exit 173
+  echo "无法调用 jq 命令"
+  exit
 fi
 
 if [[ -f "$json_file" ]]; then
@@ -76,7 +79,7 @@ else
 fi
 echo ""
 # 菜单询问用户是否要生成当前生效列表
-echo "是否要生成当前生效的列表？"
+echo "是否要以当前生效app来生成一个不生效列表？"
 options=("是" "否")
 select opt in "${options[@]}"; do
   if [ -n "$opt" ]; then

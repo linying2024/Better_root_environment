@@ -68,6 +68,8 @@ if [[ ! -f "$moddir/gethash.done" ]]; then
         # 检查是否是有效的锁定密钥
         if [[ "$lockstate" == "true" ]]; then
           sed -i "s/^.*ro.boot.vbmeta.digest.*$/resetprop -n ro.boot.vbmeta.digest $hash/" "$moddir/daemon.sh"
+          # 立即重置一次hash
+          resetprop -n ro.boot.vbmeta.digest $hash
           # 操作完成了，创建一个标记阻止下一次自动启动
           touch "$moddir/gethash.done"
         else
@@ -92,3 +94,5 @@ resetprop ro.boot.flash.locked 1
 resetprop ro.boot.verifiedbootstate green
 resetprop ro.secureboot.lockstate locked
 resetprop ro.boot.vbmeta.device_state locked
+# 解决vab哈希值问题 by南方的南鸭@Coolapk
+resetprop -n ro.boot.vbmeta.digest $hash

@@ -79,12 +79,12 @@ main_code() {
 
   # 获取所有第三方应用的包名，并捕获可能的错误。然后保存到临时文件 
   echo "正在免root获取主用户第三方应用包名..."
-  pm_list_packages_output=$(pm list packages --user 0 -3 </dev/null 2>&1)
+  pm_list_packages_output=$(pm list packages -3 </dev/null 2>&1)
   
   if ! echo "$pm_list_packages_output" | grep -qE "^package:[a-zA-Z]"; then
     echo "错误：直接获取失败，尝试用root切换shell用户执行"
     echo "正在获取主用户第三方应用包名..."
-    pm_list_packages_output="$(su 2000 -c 'pm list packages --user 0 -3' 2>&1)"
+    pm_list_packages_output="$(su 2000 -c 'pm list packages -3' 2>&1)"
   fi
   
   if ! echo "$pm_list_packages_output" | grep -qE "^package:[a-zA-Z]"; then
@@ -98,7 +98,7 @@ main_code() {
     fi
     # 获取所有第三方应用的包名，并捕获可能的错误。然后保存到临时文件
     echo "正在selinux宽容模式获取主用户第三方应用包名..."
-    pm_list_packages_output=$(pm list packages --user 0 -3 2>&1)
+    pm_list_packages_output=$(pm list packages -3 2>&1)
     # 如果之前是强制模式，现在还原
     if [ "$oldselinux" = "Enforcing" ]; then
       echo "恢复SELinux至强制模式"

@@ -8,27 +8,28 @@ export LC_ALL=zh_CN.UTF-8
 moddir="${0%/*}"
 json_file="$moddir/../tmp/HMA_Config.json"
 
-# 检查并设置jq命令
-jq_path=""
-if command -v jq >/dev/null 2>&1; then
-  jq_path="jq"
-else
-  case "$(uname -m)" in
-    x86_64|i?86)
-      jq_path="$moddir/../lib/jq_i386"
-      ;;
-    *)
-      jq_path="$moddir/../lib/jq_armel"
-      ;;
-  esac
-  if ! command -v "$jq_path" >/dev/null 2>&1; then
-    echo "无法调用 jq 命令"
-    exit 1
-  fi
+# 检查系统上是否已经安装了可用的 jq 命令
+if ! command -v jq >/dev/null 2>&1; then
+# 检测当前的系统架构并设置调用自带的jq
+case "$(uname -m)" in
+  x86_64|i?86)
+    alias jq="$moddir/../lib/jq-linux-i386"
+    ;;
+  aarch64|arm64)
+    alias jq="$moddir/../lib/jq-linux-arm64"
+    ;;
+  *)
+    alias jq="$moddir/../lib/jq-linux-armel"
+    ;;
+esac
+fi
+if ! command -v jq >/dev/null 2>&1; then
+  echo "无法调用 jq 命令"
+  exit
 fi
 
 # 使用jq解析JSON文件
-if ! "$jq_path" -e . "$json_file" > /dev/null 2>&1; then
+if ! jq -e . "$json_file" > /dev/null 2>&1; then
   echo "错误: 异常的json文件 '$json_file'"
   echo "中断执行"
   exit 127

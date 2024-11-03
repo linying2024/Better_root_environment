@@ -103,6 +103,11 @@ cp -af "$MODPATH/Tricky_Store/keybox.xml" "$ts_config_dir"
 #cp -af "$MODPATH/Tricky_Store/target.txt" "$ts_config_dir"
 cp -af "$MODPATH/Tricky_Store/spoof_build_vars" "$ts_config_dir"
 
+if [ -f "/sdcard/nomenu" ]; then
+  echo "在/sdcard/发现文件nomenu,使隐藏应用列表保持黑名单模式"
+  rm -f $MODPATH/Hide_My_Applist/whitelist.mode
+fi
+
 # 设置终端中文支持
 export LANG=zh_CN.UTF-8
 export LC_ALL=zh_CN.UTF-8

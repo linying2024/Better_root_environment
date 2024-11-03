@@ -29,8 +29,13 @@ com.rosan.installer.x
 com.modosa.apkinstaller
 com.iumlab.fxxk1installe
 
-
+# Other
+com.github.tianma8023.xposed.smscode
+top.hookvip.pro
 github.tornaco.android.thanos
+LH.Pad.S
+LH.Pad.X
+cn.myflv.noactive
 com.yuk.fuckMiuiThemeManager
 io.github.lsposed.disableflagsecure
 com.aide.ul.zh

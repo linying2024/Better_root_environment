@@ -45,9 +45,10 @@ fi
 # 创建空json让辅助模块正常运行(如果不使用隐藏应用列表报错为正常)
 filepath=/data/system/hide_my_applist_*
 cd $filepath
-mv -f config.json config.json.bak
-echo "{}" > config.json
-chown 9997:9997 config.json
-chmod 7777 config.json
+if [[ ! -f config.json ]]; then
+  echo "{}" > config.json
+  chown 9997:9997 config.json
+  chmod 7777 config.json
+fi
 
 exit 0
