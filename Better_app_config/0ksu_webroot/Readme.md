@@ -3,8 +3,8 @@
 ### 1.安装node js然后安装yarn,parcel和kernelsu的库
 ```
 npm install --global yarn
-yarn add --global kernelsu
-yarn add --global parcel
+yarn add kernelsu
+yarn global add parcel
 ```
 
 ### 2.使用parcel进行网页构建

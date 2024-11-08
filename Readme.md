@@ -111,4 +111,4 @@ apk部分:
 
 1.自动释放已配置的LSPosed模块作用域
 
-2.自动生成预配置的隐藏应用列表 <https://github.com/5ec1cff/Hide-My-Applist/blob/master/README_zh_CN.md> 配置文件到"隐藏应用列表-改"的app配置
+2.自动生成预配置的隐藏应用列表 <https://github.com/Dr-TSNG/Hide-My-Applist/blob/master/README_zh_CN.md> 配置文件到"隐藏应用列表-改"的app配置
