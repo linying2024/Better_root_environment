@@ -5,16 +5,16 @@ export LANG=zh_CN.UTF-8
 export LC_ALL=zh_CN.UTF-8
 
 # 设置脚本文件夹
-moddir="${0%/*}"
+MODDIR="${0%/*}"
 
 # 定义结果 JSON 文件的路径
-json_file="$moddir/../tmp/HMA_Config.json"
+json_file="$MODDIR/../tmp/HMA_Config.json"
 # 定义外部配置文件的路径
-whitelist="$moddir/whitelist.txt"
-blacklist="$moddir/blacklist.txt"
-excludelist="$moddir/excludelist.txt"
-applist="$moddir/../tmp/applist.txt"
-temptext="$moddir/../tmp/temp.txt"
+whitelist="$MODDIR/whitelist.txt"
+blacklist="$MODDIR/blacklist.txt"
+excludelist="$MODDIR/excludelist.txt"
+applist="$MODDIR/../tmp/applist.txt"
+temptext="$MODDIR/../tmp/temp.txt"
 
 # 强制等待android设备启动完成，防止未知错误
 echo "等待设备启动..."
@@ -42,13 +42,13 @@ if ! command -v jq >/dev/null 2>&1; then
 # 检测当前的系统架构并设置调用自带的jq
 case "$(uname -m)" in
   x86_64|i?86)
-    alias jq="$moddir/../lib/jq-linux-i386"
+    alias jq="$MODDIR/../lib/jq-linux-i386"
     ;;
   aarch64|arm64)
-    alias jq="$moddir/../lib/jq-linux-arm64"
+    alias jq="$MODDIR/../lib/jq-linux-arm64"
     ;;
   *)
-    alias jq="$moddir/../lib/jq-linux-armel"
+    alias jq="$MODDIR/../lib/jq-linux-armel"
     ;;
 esac
 fi
@@ -77,7 +77,7 @@ excludelist_apps=$(cat "$excludelist" | grep -v '^#' | grep -v '^$')
 # 输出过滤后的文本
 echo "$excludelist_apps" > "$temptext"
 # 调用dex过滤排除名单中的app
-filtered_apps=$(dalvikvm -cp "$moddir/../lib/FilterText.dex" FilterText -args "$applist" "$temptext")
+filtered_apps=$(dalvikvm -cp "$MODDIR/../lib/FilterText.dex" FilterText -args "$applist" "$temptext")
 # 检查是否为空，为空则更换另一个过滤方法
 if [[ -z "$filtered_apps" ]]; then
   echo "过滤失败，尝试第二种方法"
@@ -98,7 +98,7 @@ whitelist_json=$(echo "$whitelist_apps" | jq -R . | jq -s '. | if length > 0 the
 
 # 为每个过滤后的app构建一个JSON对象
 # 检测是否使用白名单模式进行隐藏
-if [ -f "$moddir/whitelist.mode" ]; then
+if [ -f "$MODDIR/whitelist.mode" ]; then
   filtered_apps_json=$(echo "$filtered_apps" | jq -R . | jq -s --argjson blacklist "$blacklist_json" '. as $in | map(. as $app | {($app): {useWhitelist: true, excludeSystemApps: true, applyTemplates: ["可见名单"], extraAppList: []}})')
 else
   filtered_apps_json=$(echo "$filtered_apps" | jq -R . | jq -s --argjson blacklist "$blacklist_json" '. as $in | map(. as $app | {($app): {useWhitelist: false, excludeSystemApps: false, applyTemplates: ["不可见名单"], extraAppList: []}})')
@@ -136,7 +136,7 @@ if ! jq -e . "$json_file" > /dev/null 2>&1; then
   exit 127
 else
   echo "json文件格式检查通过, 拉起文件替换脚本"
-  "$moddir/replace.sh" &> "$moddir/../tmp/Hide_My_Applist_replace.log" 2>&1 &
+  sh "$MODDIR/replace.sh" &> "$MODDIR/../tmp/Hide_My_Applist_replace.log" 2>&1 &
 fi
 
 return 2>/dev/null

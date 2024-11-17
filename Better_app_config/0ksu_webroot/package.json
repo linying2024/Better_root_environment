@@ -1,7 +1,7 @@
 {
   "name": "kernelsu_webui",
-  "version": "demo0.1",  
-  "description": "",  
+  "version": "demo0.1",
+  "description": "",
   "source": "src/index.html",
   "scripts": {
     "start": "parcel",
@@ -11,6 +11,7 @@
     "yarn": "^1.22.22"
   },
   "dependencies": {
+    "kernelsu": "^1.0.6",
     "parcel": "^2.12.0"
   }
 }

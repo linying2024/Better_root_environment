@@ -1,0 +1,6 @@
+# APP的Android包名
+HMAPackageName=fuck.app.check
+# 是否开启排除列表的生成
+GetExcludeList=true
+# 模板配置名
+ProfileName=不可见名单

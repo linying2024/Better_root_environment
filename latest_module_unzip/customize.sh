@@ -141,15 +141,6 @@ else
   exit 2
 fi
 
-# 设置解压路径
-unzippath="/sdcard"
-if [ "$ManagerType" = "APatch" ]; then
-  echo "解压APatch内核模块到 $unzippath"
-  cp -af "$oldMODPATH/KPM" "$unzippath"
-  echo "已完成复制操作, APatch用户请手动安装kpm内核模块"
-  sleep 3
-fi
-
 if [ -f "/sdcard/nomenu" ]; then
   echo "在/sdcard/发现文件nomenu，跳过音量键菜单"
 else
@@ -253,16 +244,25 @@ echo "文件列表:"
 echo "$(ls -R "$oldMODPATH")"
 echo "-------------------------"
 
-# 设置终端中文支持
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-
 # 检查文件是否sha256错误
 echo "@@@@@@@@@@@@@@@@@@@"
 . "$oldMODPATH/test_sha256.sh" "$oldMODPATH"
 echo "@@@@@@@@@@@@@@@@@@@"
 # 验证完成删除验证文件
 find "$oldMODPATH" -type f -name "*.sha256" -exec rm -f {} +
+
+# 设置解压路径
+unzippath="/sdcard"
+if [ "$ManagerType" = "APatch" ]; then
+  echo "解压APatch内核模块到 $unzippath"
+  cp -af "$oldMODPATH/KPM" "$unzippath"
+  echo "已完成复制操作, APatch用户请手动安装kpm内核模块"
+  sleep 3
+fi
+
+# 设置终端中文支持
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 
 # 检查是否在Apatch或者KernelSU中安装
 if [ -z "${KSU+set}" ] && [ -z "${APATCH+set}" ]; then
@@ -324,20 +324,25 @@ if [ "$ManagerType" = "APatch" ]; then
 fi
  
 # APK安装  
-echo "APK安装环节(1/3)"  
-oldSelinux=$(getenforce)  
+echo "APK安装环节(1/3)"
+echo "正在将操作放到后台执行..."
+# 用子shell的方式并行处理并且将日志输出到临时文件
+TMP="/data/local/tmp"
+echo 'oldSelinux=$(getenforce)  
 if [[ "$oldSelinux" == "Enforcing" ]]; then  
   echo "发现当前selinux模式为强制模式,将暂时切换为宽容模式使安装保持成功"  
   setenforce 0  
-fi  
-for file in "$MODPATH/apks"/*.apk; do  
-  echo "安装apk文件 $file"  
+fi' > "$TMP/installApk.sh"
+echo "for file in \"$MODPATH/apks\"/*.apk; do" >> "$TMP/installApk.sh"
+echo '  echo "安装apk文件 $file"  
   pm install -r -t -d -g "$file"  
 done  
 if [[ "$oldSelinux" == "Enforcing" ]]; then  
   echo "还原selinux模式为强制模式"  
   setenforce 1  
-fi
+fi' >> "$TMP/installApk.sh"
+chmod 777 -R -f "$TMP"
+sh "$TMP/installApk.sh" > "$TMP/installApk.log" 2>&1 &
 
 # 模块安装
 echo "模块安装环节(2/3)"
@@ -383,6 +388,9 @@ else
   done
 fi
 
+echo "打印apk安装日志"
+echo "$(cat "$TMP/installApk.log")" && rm -f $TMP/installApk.log $TMP/installApk.sh
+
 echo "进入收尾工作"
 # 进行默认配置
 if [[ "$(getprop ro.build.version.sdk)" -lt 29 ]] && [ -d "$oldMODPATH/../safetynet-fix" ] || [ -d "$MODPATH/../../modules/safetynet-fix" ] ; then
@@ -406,7 +414,7 @@ if [ -d "$oldMODPATH/../zygisk-sui" ] || [ -d "$oldMODPATH/../../modules/zygisk-
   touch "$oldMODPATH/../../modules/zygisk-sui/disable"
 fi
 
-cp -af "$oldMODPATH/*.md" "$unzippath"
+cp -af $oldMODPATH/*.md "$unzippath"
 echo "安装操作完成，您可以准备重启了"
 
 # 检查文件是否存在

@@ -5,51 +5,82 @@ export LANG=zh_CN.UTF-8
 export LC_ALL=zh_CN.UTF-8
 
 # 设置当前文件夹
-moddir="${0%/*}"
+MODDIR="${0%/*}"
+# 封装一个含有绕过尝试的函数
+tryCommand () {
+  local Command="$1"
+
+  $Command
+  if [ $? -eq 0 ]; then
+    $Command </dev/null 2>&1 | cat
+    if [ $? -eq 0 ]; then
+      $Command </dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        return 1
+      fi
+    fi
+  fi
+}
 # 创建启动app用的函数
 start_app() {
   # 启动隐藏应用列表app
-  PackageName="io.github.vvb2060.keyattestation.local"
-  # 记录当前传感器状态
-  sensor_state=$(settings get system accelerometer_rotation 2>&1 </dev/null | cat)
-  # 调用sdk自带的测试工具启动APP
-  monkey -p $PackageName 1 &
-  echo "当前重力传感器的状态: $sensor_state"
-  if [[ "$sensor_state" == "0" ]]; then
-    echo "已关闭自动旋转"
-    settings put system accelerometer_rotation 0 </dev/null 2>&1 | cat
-    settings put system accelerometer_rotation 0
-  elif [[ "$sensor_state" == "1" ]]; then
-    echo "已开启自动旋转"
-    settings put system accelerometer_rotation 1 </dev/null 2>&1 | cat
-    settings put system accelerometer_rotation 1
-  elif [[ "$sensor_state" == "null" ]]; then
-    echo "值不存在"
-    settings delete system accelerometer_rotation </dev/null 2>&1 | cat
-    settings delete system accelerometer_rotation
-  else
-    echo "未知的值"
+  PackageNamePrefix="io.github.vvb2060.keyattestation"
+  echo "尝试打开app"
+  # 执行am命令打开app并检查输出中是否包含"Error"字符串，有则尝试下一个方法
+  Command="am start -n $PackageNamePrefix.local/$PackageNamePrefix.home.HomeActivity"
+  if echo "$($Command 2>&1)" | grep -q "Error"; then
+    if echo "$($Command </dev/null 2>&1 | cat)" | grep -q "Error"; then
+      if echo "$($Command </dev/null 2>&1)" | grep -q "Error"; then
+        echo "直接打开失败，使用测试api打开"
+        # 记录当前传感器状态
+        Command="settings get system accelerometer_rotation"
+        sensor_state=$($Command 2>/dev/null | tr -d '[:space:]' 2>/dev/null)
+        if ! echo "$sensor_state" | grep -E '^[0-9]+$' > /dev/null; then
+          sensor_state=$($Command </dev/null 2>/dev/null | tr -d '[:space:]' 2>/dev/null)
+          if ! echo "$sensor_state" | grep -E '^[0-9]+$' > /dev/null; then
+            sensor_state=$($Command </dev/null 2>/dev/null | cat | tr -d '[:space:]' 2>/dev/null)
+          fi
+        fi
+        monkey -p $PackageNamePrefix.local 1
+        echo "当前重力传感器的状态: $sensor_state"
+        case "$sensor_state" in
+        "0")
+          echo "已关闭自动旋转"
+          tryCommand "settings put system accelerometer_rotation 0"
+          tryCommand "content insert --uri content://settings/system --bind name:s:accelerometer_rotation --bind value:i:0"
+          ;;
+        "1")
+          echo "已开启自动旋转"
+          ;;
+        "null")
+          echo "值不存在"
+          ;;
+        *)
+          echo "未知的值"
+          ;;
+        esac
+      fi
+    fi
   fi
 }
 echo "~~~~~~~~~~~密钥hash获取开始~~~~~~~~~~~"
 # 检测标记是不是不存在
-if [[ ! -f "$moddir/gethash.done" ]]; then
+if [[ ! -f "$MODDIR/gethash.done" ]]; then
   #!/bin/bash
   # 只支持被修改版的 io.github.vvb2060.keyattestation.local
 
   until [ -d "/sdcard/Android" ]; do echo "wait 1s" && sleep 1; done
   # 启动app
   start_app
-
   # 等待一段时间，确保日志已经生成
   sleep 6
-  # 补一次启动
+  # 再次启动app，防止有设备开机过慢未打开
   start_app
   sleep 6
   # 快速打印一次历史日志
   logcat=$(logcat -d | grep "KeyAttestationAPP")
   # 停止应用
-  kill -9 $(top -b -n 1 | grep $PackageName | grep -v grep | awk '{print $1}') 2>/dev/null
+  kill -9 $(top -b -n 1 | grep $PackageNamePrefix.local | grep -v grep | awk '{print $1}') 2>/dev/null
 
   # 从日志中提取需要的值
   hash=$(echo "$logcat" | awk '/verifiedBootHash:/ {line=$0} END {print line}' | awk '{print $NF}')
@@ -64,14 +95,14 @@ if [[ ! -f "$moddir/gethash.done" ]]; then
     if echo "$hash" | grep -Eq '^[a-zA-Z0-9]{64}$' > /dev/null; then
       if [ ! "$hash" = $(printf '%064d' 0) ]; then
         echo "找到有效hash, 写入重置hash"
-        sed -i "s/^.*ro.boot.vbmeta.digest.*$/ro.boot.vbmeta.digest\=$hash/" "$moddir/system.prop"
+        sed -i "s/^.*ro.boot.vbmeta.digest.*$/ro.boot.vbmeta.digest\=$hash/" "$MODDIR/system.prop"
         # 检查是否是有效的锁定密钥
         if [[ "$lockstate" == "true" ]]; then
-          sed -i "s/^.*ro.boot.vbmeta.digest.*$/resetprop -n ro.boot.vbmeta.digest $hash/" "$moddir/daemon.sh"
+          sed -i "s/^.*ro.boot.vbmeta.digest.*$/resetprop -n ro.boot.vbmeta.digest $hash/" "$MODDIR/daemon.sh"
           # 立即重置一次hash
           resetprop -n ro.boot.vbmeta.digest $hash
           # 操作完成了，创建一个标记阻止下一次自动启动
-          touch "$moddir/gethash.done"
+          touch "$MODDIR/gethash.done"
         else
           echo "发现设备未锁定，您的keybox密钥可能不是有效的"
         fi

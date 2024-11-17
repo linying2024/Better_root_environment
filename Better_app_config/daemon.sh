@@ -45,7 +45,7 @@ mv -f /data/media/0/Fox /data/media/0/rec
 mv -f /data/media/Fox /data/media/rec
 
 # 设置当前文件夹
-moddir="${0%/*}"
+MODDIR="${0%/*}"
 # 监控的目录
 dir="/data/app"
 
@@ -57,36 +57,48 @@ fi
 main_code() {
   echo ""
   # 检查日志大小是否超过上限
-  if [ $(stat -c%s "$moddir/daemon.log") -ge 500000 ]; then
+  if [ $(stat -c%s "$MODDIR/daemon.log") -ge 500000 ]; then
     echo "已经达到文件大小上限，清空文件"
-    echo "# file size max! fill none" > "$moddir/daemon.log"
+    echo "# file size max! fill none" > "$MODDIR/daemon.log"
   fi
 
   # 删除旧文件
-  rm -rf "$moddir/tmp_old"
+  rm -rf "$MODDIR/tmp_old"
   # 移动文件,以备份原文件
-  mv -f "$moddir/tmp" "$moddir/tmp_old"
+  mv -f "$MODDIR/tmp" "$MODDIR/tmp_old"
 
-  if [ ! -d "$moddir/tmp" ]; then
-    echo "目标文件夹不存在了，创建新文件夹：$moddir/tmp"
+  if [ ! -d "$MODDIR/tmp" ]; then
+    echo "目标文件夹不存在了，创建新文件夹：$MODDIR/tmp"
   fi
-  mkdir -p "$moddir/tmp"
+  mkdir -p "$MODDIR/tmp"
   mkdir -p "$(pwd)/tmp"
 
-  echo "触发操作: $action" > "$moddir/tmp/check.update.log"
-  echo "路径: $path" >> "$moddir/tmp/check.update.log"
-  echo "文件： $file" >> "$moddir/tmp/check.update.log"
+  echo "触发操作: $action" > "$MODDIR/tmp/check.update.log"
+  echo "路径: $path" >> "$MODDIR/tmp/check.update.log"
+  echo "文件： $file" >> "$MODDIR/tmp/check.update.log"
 
   # 获取所有第三方应用的包名，并捕获可能的错误。然后保存到临时文件 
-  echo "正在免root获取主用户第三方应用包名..."
-  pm_list_packages_output=$(pm list packages -3 </dev/null 2>&1)
-  
+  echo "正在直接获取第三方应用包名..."
+  pm_list_packages_output=$(pm list packages -3 2>&1)
+
   if ! echo "$pm_list_packages_output" | grep -qE "^package:[a-zA-Z]"; then
-    echo "错误：直接获取失败，尝试用root切换shell用户执行"
-    echo "正在获取主用户第三方应用包名..."
+    echo "错误：直接获取失败，二次尝试免root"
+    echo "正在获取,第三方应用包名..."
+    pm_list_packages_output="$(pm list packages -3 </dev/null 2>&1)"
+  fi
+
+  if ! echo "$pm_list_packages_output" | grep -qE "^package:[a-zA-Z]"; then
+    echo "错误：直接获取失败，三次尝试免root"
+    echo "正在获取,第三方应用包名..."
+    pm_list_packages_output="$(pm list packages -3 </dev/null 2>&1 | cat)"
+  fi
+
+  if ! echo "$pm_list_packages_output" | grep -qE "^package:[a-zA-Z]"; then
+    echo "错误：免root直接获取失败，尝试用root切换用户执行"
+    echo "正在获取,第三方应用包名..."
     pm_list_packages_output="$(su 2000 -c 'pm list packages -3' 2>&1)"
   fi
-  
+
   if ! echo "$pm_list_packages_output" | grep -qE "^package:[a-zA-Z]"; then
     echo "错误：获取失败，尝试用root更改selinux规则"
     # 获取当前的SELinux状态
@@ -97,7 +109,7 @@ main_code() {
       setenforce 0
     fi
     # 获取所有第三方应用的包名，并捕获可能的错误。然后保存到临时文件
-    echo "正在selinux宽容模式获取主用户第三方应用包名..."
+    echo "正在selinux宽容模式获取,第三方应用包名..."
     pm_list_packages_output=$(pm list packages -3 2>&1)
     # 如果之前是强制模式，现在还原
     if [ "$oldselinux" = "Enforcing" ]; then
@@ -112,14 +124,14 @@ main_code() {
     exit 1
   else
     # 将匹配到的包名写入临时文件
-    echo "$pm_list_packages_output" | awk -F':' '{print $2}' | grep -E "^[a-zA-Z]" > "$moddir/tmp/applist.txt"
+    echo "$pm_list_packages_output" | awk -F':' '{print $2}' | grep -E "^[a-zA-Z]" > "$MODDIR/tmp/applist.txt"
   fi
   
   echo "app列表获取操作完成"
   
   # 当上一次的列表文件存在时判断内容是否一致
-  if [[ -f "$moddir/tmp_old/applist.txt" ]]; then
-    if diff "$moddir/tmp_old/applist.txt" "$moddir/tmp/applist.txt" > /dev/null; then
+  if [[ -f "$MODDIR/tmp_old/applist.txt" ]]; then
+    if diff "$MODDIR/tmp_old/applist.txt" "$MODDIR/tmp/applist.txt" > /dev/null; then
       echo "文件内容一致，退出本次调用"
       return 1
     else
@@ -128,30 +140,34 @@ main_code() {
   fi
 
   echo "拉起其他依赖脚本"
-  "$moddir/Hide_My_Applist/get_config.sh" &> "$moddir/tmp/Hide_My_Applist.log" 2>&1 &
-  "$moddir/Tricky_Store/get_config.sh" &> "$moddir/tmp/Tricky_Store.log" 2>&1 &
+  sh "$MODDIR/Hide_My_Applist/get_config.sh" &> "$MODDIR/tmp/Hide_My_Applist.log" 2>&1 &
+  sh "$MODDIR/Tricky_Store/get_config.sh" &> "$MODDIR/tmp/Tricky_Store.log" 2>&1 &
 
   # 这里可以根据需要添加更多逻辑
 }
 
 # 尝试获取hash
-"$moddir/getboothash.sh" &> "$moddir/getboothash.log" 2>&1 &
+sh "$MODDIR/getboothash.sh" &> "$MODDIR/getboothash.log" 2>&1 &
 
 # 设置初始描述
 action="power on! first running"
-path="$moddir"
-file="$moddir/daemon.sh"
+path="$MODDIR"
+file="$MODDIR/daemon.sh"
 # 执行主代码
 main_code
 
+if [[ "$1" == "noService" ]]; then
+  echo "接受到非服务开关，退出执行"
+  exit 0
+fi
 # 检查是否命令可用
-if ! command -v "$moddir/lib/inotifywait_arm" >/dev/null 2>&1; then
+if ! command -v "$MODDIR/lib/inotifywait_arm" >/dev/null 2>&1; then
   echo "无法调用 inotifywait_arm，退出执行"
   return 2>/dev/null
   exit 0>/dev/null
 fi
 # 使用inotifywait持续监听指定文件夹创建和删除事件
-"$moddir/lib/inotifywait_arm" -m -e create -e delete --format '%w%f %e %f' "$dir" | while read path action file; do
+"$MODDIR/lib/inotifywait_arm" -m -e create -e delete --format '%w%f %e %f' "$dir" | while read path action file; do
   # 执行主代码
   main_code
 done

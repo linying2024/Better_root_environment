@@ -40,6 +40,6 @@ yarn parcel build
 
 [parceljs](https://parceljs.org/)
 
-[parceljs_CN](https://parceljs.cn/)<sup>*不推荐</sup>
+[parceljs_CN](https://parceljs.cn/) <sup>*不推荐</sup>
 
 [调试WebView的教程](https://www.jianshu.com/p/2c3523d19ef4)

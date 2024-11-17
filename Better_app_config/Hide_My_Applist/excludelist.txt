@@ -6,6 +6,7 @@ io.github.vvb2060.magisk
 com.topjohnwu.magisk
 me.weishu.kernelsu
 me.bmax.apatch
+me.garfieldhan.apatch.next
 com.tsng.hidemyapplist
 com.tsng.dyhhvf
 fuck.app.check
@@ -20,6 +21,11 @@ com.byyoung.setting
 com.coderstory.toolkit
 com.omarea.vtools
 
+# check
+io.github.vvb2060.keyattestation
+io.github.vvb2060.mahoshojo
+icu.nullptr.nativetest
+
 # install package app
 com.google.packageinstaller
 com.android.packageinstaller
@@ -30,6 +36,9 @@ com.modosa.apkinstaller
 com.iumlab.fxxk1installe
 
 # Other
+com.example.vcam
+com.sandyz.virtualcam
+one.yufz.hmspush
 com.github.tianma8023.xposed.smscode
 top.hookvip.pro
 github.tornaco.android.thanos

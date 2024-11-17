@@ -5,21 +5,21 @@ export LANG=zh_CN.UTF-8
 export LC_ALL=zh_CN.UTF-8
 
 # 设置脚本文件夹和JSON文件路径
-moddir="${0%/*}"
-json_file="$moddir/../tmp/HMA_Config.json"
+MODDIR="${0%/*}"
+json_file="$MODDIR/../tmp/HMA_Config.json"
 
 # 检查系统上是否已经安装了可用的 jq 命令
 if ! command -v jq >/dev/null 2>&1; then
 # 检测当前的系统架构并设置调用自带的jq
 case "$(uname -m)" in
   x86_64|i?86)
-    alias jq="$moddir/../lib/jq-linux-i386"
+    alias jq="$MODDIR/../lib/jq-linux-i386"
     ;;
   aarch64|arm64)
-    alias jq="$moddir/../lib/jq-linux-arm64"
+    alias jq="$MODDIR/../lib/jq-linux-arm64"
     ;;
   *)
-    alias jq="$moddir/../lib/jq-linux-armel"
+    alias jq="$MODDIR/../lib/jq-linux-armel"
     ;;
 esac
 fi
@@ -35,9 +35,25 @@ if ! jq -e . "$json_file" > /dev/null 2>&1; then
   exit 127
 fi
 
+# 封装一个含有绕过尝试的函数
+tryCommand () {
+  local Command="$1"
+
+  $Command
+  if [ $? -eq 0 ]; then
+    $Command </dev/null 2>&1 | cat
+    if [ $? -eq 0 ]; then
+      $Command </dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        return 1
+      fi
+    fi
+  fi
+}
+
 # 定义HMA配置文件路径和操作函数
-HMAPackageName="fuck.app.check"
-HMA_FILE_PATH="/data/user/0/$HMAPackageName/files/config.json"
+PackageName="fuck.app.check"
+HMA_FILE_PATH="/data/user/0/$PackageName/files/config.json"
 check_and_restart_app() {
   if [ ! -f "$HMA_FILE_PATH" ]; then
     echo "HMA配置文件不存在，尝试启动应用并重新生成配置..."
@@ -49,34 +65,47 @@ check_and_restart_app() {
 
 # 重启应用并检查文件大小
 restart_app() {
-  # 记录当前传感器状态
-  sensor_state=$(settings get system accelerometer_rotation 2>&1 </dev/null | cat)
-  monkey -p $HMAPackageName 1
-  echo "当前重力传感器的状态: $sensor_state"
-  adjust_sensor "$sensor_state"
+  echo "尝试打开app"
+  # 执行am命令打开app并检查输出中是否包含"Error"字符串，有则尝试下一个方法
+  Command="am start -n $PackageName/.MainActivityLauncher"
+  if echo "$($Command 2>&1)" | grep -q "Error"; then
+    if echo "$($Command </dev/null 2>&1 | cat)" | grep -q "Error"; then
+      if echo "$($Command </dev/null 2>&1)" | grep -q "Error"; then
+        echo "直接打开失败，使用测试api打开"
+        # 记录当前传感器状态
+        Command="settings get system accelerometer_rotation"
+        sensor_state=$($Command 2>/dev/null | tr -d '[:space:]' 2>/dev/null)
+        if ! echo "$sensor_state" | grep -E '^[0-9]+$' > /dev/null; then
+          sensor_state=$($Command </dev/null 2>/dev/null | tr -d '[:space:]' 2>/dev/null)
+          if ! echo "$sensor_state" | grep -E '^[0-9]+$' > /dev/null; then
+            sensor_state=$($Command </dev/null 2>/dev/null | cat | tr -d '[:space:]' 2>/dev/null)
+          fi
+        fi
+        monkey -p $PackageName 1
+        echo "当前重力传感器的状态: $sensor_state"
+        # 调整传感器状态
+        case "$sensor_state" in
+        "0")
+          echo "已关闭自动旋转"
+          tryCommand "settings put system accelerometer_rotation 0"
+          tryCommand "content insert --uri content://settings/system --bind name:s:accelerometer_rotation --bind value:i:0"
+          ;;
+        "1")
+          echo "已开启自动旋转"
+          ;;
+        "null")
+          echo "值不存在"
+          ;;
+        *)
+          echo "未知的值"
+          ;;
+        esac
+      fi
+    fi
+  fi
   sleep 5
   # 强制停止应用
-  kill -9 $(top -b -n 1 | grep $HMAPackageName | grep -v grep | awk '{print $1}')
-}
-
-# 调整传感器状态
-adjust_sensor() {
-  case "$1" in
-    "0")
-      echo "已关闭自动旋转"
-      settings put system accelerometer_rotation 0 </dev/null 2>&1 | cat
-      content insert --uri content://settings/system --bind name:s:accelerometer_rotation --bind value:i:0 </dev/null 2>&1 | cat
-      ;;
-    "1")
-      echo "已开启自动旋转"
-      ;;
-    "null")
-      echo "值不存在"
-      ;;
-    *)
-      echo "未知的值"
-      ;;
-  esac
+  kill -9 $(top -b -n 1 | grep $PackageName | grep -v grep | awk '{print $1}')
 }
 
 # 检查文件大小并重启应用
@@ -84,7 +113,7 @@ check_file_size() {
   local file_path=$1
   if [ $(stat -c%s "$file_path") -le 103 ]; then
     echo "HMA配置文件的大小，小于等于103B，清空应用数据并重新启动..."
-    rm -rf /data/user/0/$HMAPackageName/*
+    rm -rf /data/user/0/$PackageName/*
     sleep 0.5s
     restart_app
   fi
@@ -111,7 +140,7 @@ wait_for_file() {
 replace_config() {
   echo "准备替换旧的HMA配置文件..."
   sleep 0.5s
-  kill -9 $(top -b -n 1 | grep $HMAPackageName | grep -v grep | awk '{print $1}') 2>/dev/null
+  kill -9 $(top -b -n 1 | grep $PackageName | grep -v grep | awk '{print $1}') 2>/dev/null
   if [ $? -eq 0 ]; then
     echo "应用已停止"
   fi
@@ -130,7 +159,7 @@ replace_config() {
     fi
   else
     echo "配置文件成功写入"
-    if [ -f "$moddir/reload" ]; then
+    if [ -f "$MODDIR/reload" ]; then
       echo "启动app使新配置生效"
       restart_app
     else

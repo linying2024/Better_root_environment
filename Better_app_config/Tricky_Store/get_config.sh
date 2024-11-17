@@ -14,7 +14,6 @@ moddir="${0%/*}"
 
 # 初始化变量
 # 设置模块路径参数
-MODDIR=/data/adb/modules/tricky_store
 CONFIG_DIR=/data/adb/tricky_store
 # 设置已过滤文件的输出位置,和缓存文件位置
 target_file_path="$moddir/../tmp/target.txt"
@@ -166,7 +165,7 @@ echo "生成配置文件操作完成"
 
 if [[ -f "$moddir/../tmp/target.txt" ]]; then
   echo "配置文件存在, 拉起文件替换脚本"
-  "$moddir/replace.sh" &> "$moddir/../tmp/tricky_store_replace.log" 2>&1 &
+  sh "$moddir/replace.sh" &> "$moddir/../tmp/tricky_store_replace.log" 2>&1 &
 fi
 
 return 2>/dev/null

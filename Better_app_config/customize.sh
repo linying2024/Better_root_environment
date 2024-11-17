@@ -50,12 +50,20 @@ unzip -o "$ZIPFILE" -d "$MODPATH" >&2;
 # 检查是不是安装过
 if [[ -d "$filepath" ]]; then
   echo "保留配置更新"
+  # 导出变量，让子shell能获取
+  export TMPDIR="$TMPDIR"
+  export MODPATH="$MODPATH"
   # 把所有.txt结尾的配置文件移动到临时文件夹
   find "$MODPATH" -name "*.txt" -exec sh -c '
+    # 在子shell中接受变量
+    export TMPDIR="'"$TMPDIR"'"
+    export MODPATH="'"$MODPATH"'"
     file="{}";
-    dir="$TMPDIR/$(dirname "{}")";
+    base_dir=$(dirname "${file}");
+    rel_path="${base_dir#$MODPATH}";
+    dir="$TMPDIR/$rel_path";
     mkdir -p "$dir";
-    mv "$file" "$dir";
+    mv "$file" "$dir/$(basename "$file")";
   ' \;
   # 强制删除白名单标记文件
   rm -f "$MODPATH/Hide_My_Applist/whitelist.mode"
@@ -100,7 +108,7 @@ echo "复制默认tricky_store配置文件"
 ts_config_dir="/data/adb/tricky_store"
 mkdir -p $ts_config_dir
 cp -af "$MODPATH/Tricky_Store/keybox.xml" "$ts_config_dir"
-#cp -af "$MODPATH/Tricky_Store/target.txt" "$ts_config_dir"
+cp -af "$MODPATH/Tricky_Store/target.txt" "$ts_config_dir"
 cp -af "$MODPATH/Tricky_Store/spoof_build_vars" "$ts_config_dir"
 
 if [ -f "/sdcard/nomenu" ]; then

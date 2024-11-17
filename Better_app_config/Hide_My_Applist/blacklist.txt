@@ -6,6 +6,7 @@ io.github.vvb2060.magisk
 com.topjohnwu.magisk
 me.weishu.kernelsu
 me.bmax.apatch
+me.garfieldhan.apatch.next
 com.tsng.hidemyapplist
 com.tsng.dyhhvf
 fuck.app.check
@@ -36,8 +37,12 @@ com.byyoung.extract
 com.byyoung.setting
 com.coderstory.toolkit
 com.omarea.vtools
+com.miui.securitycenter
 
 # Other
+com.example.vcam
+com.sandyz.virtualcam
+one.yufz.hmspush
 com.github.tianma8023.xposed.smscode
 top.hookvip.pro
 github.tornaco.android.thanos
