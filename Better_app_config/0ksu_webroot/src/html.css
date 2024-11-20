@@ -133,6 +133,10 @@ h1 {
   font-size: 0.7em; /* 字体大小 */
 }
 
+.allowClick {
+  cursor: pointer;
+}
+
 /* 媒体查询，针对不同屏幕尺寸调整按钮的字体大小 */
 @media (max-width: 768px) {
   .button-container button {

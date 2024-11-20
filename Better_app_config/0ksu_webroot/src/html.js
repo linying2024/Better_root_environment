@@ -48,9 +48,51 @@ titleContainer.classList.add('title-container');
 // 创建标题元素
 const title = document.createElement('h5');
 title.textContent = 'Module Webui';
+// 嵌入css样式，允许被点击
+title.classList.add('allowClick');
+// 初始化变量
+let title_clickCount = 0;
+title.addEventListener('click', function() {
+  title_clickCount++;
+  ksu.toast('被点了一次');
+  if (title_clickCount === 3) {
+    title_clickCount = 0;
+    window.location.href = "https://github.com/linying2024/Better_root_environment/tree/main/Better_app_config/0ksu_webroot";
+  };
+});
 // 创建版本标题元素
 const versiontitle = document.createElement('h5');
 versiontitle.textContent = 'version';
+// 嵌入css样式，允许被点击
+versiontitle.classList.add('allowClick');
+// 初始化变量
+let versiontitle_clickCount = 0;
+versiontitle.addEventListener('click', function() {
+  versiontitle_clickCount++;
+  if (versiontitle_clickCount === 1) {
+    ksu.toast('?');
+  };
+  if (versiontitle_clickCount === 2) {
+    ksu.toast('你干嘛??');
+  };
+  if (versiontitle_clickCount === 3) {
+    ksu.toast('你到底要做什么???');
+  };
+  if (versiontitle_clickCount === 4) {
+    ksu.toast('不要再点了啊!!!!');
+  };
+  if (versiontitle_clickCount === 5) {
+    ksu.toast('别点了,再点要坏掉了.....');
+  };
+  if (versiontitle_clickCount === 6) {
+    ksu.toast('真的不能再点了,真的会坏掉的啊......');
+  };
+  if (versiontitle_clickCount === 7) {
+    versiontitle_clickCount = 0;
+    ksu.toast('不听劝是吧?你完了.......');
+    window.location.href = "error.html";
+  };
+});
 // 将版本号和标题添加到容器中，确保标题从右边开始
 titleContainer.appendChild(versiontitle);
 titleContainer.appendChild(title);
@@ -71,7 +113,7 @@ appContainer.appendChild(titleContainer);
 
 // 定义一个异步函数，用于将shell执行结果输出到日志区
 // 接收传入的命令,如果不传入工作目录则使用默认值 MODDIR
-async function PrintExecuteCommandLogToUi(command, cwd = MODDIR) {
+async function PrintExecuteCommandLogToUi(command, cwd = MODDIR, noBusybox = false) {
   // 先给个提醒，防止多次点击
   logEntry.textContent = '执行中';
   // 设置延迟,让ui有机会更新出来
@@ -79,7 +121,7 @@ async function PrintExecuteCommandLogToUi(command, cwd = MODDIR) {
     // 尝试执行
     try {
       // 调用封装好的异步函数执行命令
-      const result = await executeCommand(command, cwd);
+      const result = await executeCommand(command, cwd, noBusybox);
       // 将命令执行的结果直接设置到 <pre> 元素中
       logEntry.textContent = result;
       // 滚动日志区域到最新内容（如果日志区域有滚动条的话）
@@ -126,22 +168,34 @@ buttonDescription.textContent = '提示:命令较多时可能会卡住或者日�
 // 添加输入框和执行按钮的容器
 const inputContainer = document.createElement('div');
 inputContainer.classList.add('input-container');
-
 const inputDescription = document.createElement('p');
 inputDescription.textContent = '自定义shell执行';
-
 // 创建输入框
 const inputBox = document.createElement('input');
 inputBox.type = 'text';
-inputBox.placeholder = '在这里可以输入自定义sh命令';
-
+inputBox.placeholder = '输入自定义sh命令';
 // 创建执行按钮
 const CustomExecuteButton = document.createElement('button');
 CustomExecuteButton.textContent = '执行';
-
 // 将所有元素添加到inputContainer中
 inputContainer.appendChild(inputBox);
 inputContainer.appendChild(CustomExecuteButton);
+
+// 添加输入框和按钮的容器
+const inputContainer2 = document.createElement('div');
+inputContainer2.classList.add('input-container');
+const inputDescription2 = document.createElement('p');
+inputDescription2.textContent = '←打开网址';
+// 创建输入框
+const inputBox2 = document.createElement('input');
+inputBox2.type = 'text';
+inputBox2.placeholder = '输入您想要打开的网址';
+// 创建按钮
+const CustomExecuteButton2 = document.createElement('button');
+CustomExecuteButton2.textContent = '打开';
+// 将所有元素添加到inputContainer2中
+inputContainer2.appendChild(inputBox2);
+inputContainer2.appendChild(CustomExecuteButton2);
 
 // 将所有元素添加到卡片中
 serverStatusBody.appendChild(hmaButton);
@@ -149,6 +203,9 @@ serverStatusBody.appendChild(buttonDescription); // 添加描述
 serverStatusBody.appendChild(document.createElement('br')); // 添加换行
 serverStatusBody.appendChild(inputDescription); // 添加描述
 serverStatusBody.appendChild(inputContainer); // 添加输入框和执行按钮的容器
+serverStatusBody.appendChild(document.createElement('br')); // 添加换行
+serverStatusBody.appendChild(inputContainer2); 
+serverStatusBody.appendChild(inputDescription2); // 添加换行
 serverStatusCard.appendChild(serverStatusHeader);
 serverStatusCard.appendChild(serverStatusBody);
 
@@ -192,18 +249,14 @@ buttons.forEach((button, index) => {
 });
 
 CustomExecuteButton.addEventListener('click', async () => {
-  // 定义要执行的命令和目录
-  const command = inputBox.value;
-  const cwd = MODDIR;
-  
   // 调用封装好的异步函数执行命令
-  const result = await executeCommand(command, cwd);
-  
-  // 将命令执行的结果直接设置到 <pre> 元素中
-  logEntry.textContent = result;
-  
-  // 滚动日志区域到最新内容（如果日志区域有滚动条的话）
-  logBody.scrollTop = logBody.scrollHeight;
+  PrintExecuteCommandLogToUi(inputBox.value);
+});
+CustomExecuteButton2.addEventListener('click', async () => {
+  // 让webui网页调整全屏模式
+  fullScreen(false);
+  ksu.toast('已打开网页');
+  window.location.href = inputBox2.value;
 });
 
 // 为菜单项添加点击事件监听器
@@ -287,7 +340,7 @@ hmaButton.addEventListener('click', () => {
     executeButton.textContent = '保存';
 
     executeButton.addEventListener('click', async () => {
-      const command = `sed -i 's/^${configKey}=.*'/'${configKey}=${inputBox.value}'/" "${MODDIR}/webroot/webUiConfig.prop" && echo "已写入`;
+      const command = `sed -i 's/^${configKey}=.*/${configKey}=${inputBox.value}/' "${MODDIR}/webroot/webUiConfig.prop" && echo "已写入"`;
       PrintExecuteCommandLogToUi(command);
     });
 
@@ -328,17 +381,10 @@ hmaButton.addEventListener('click', () => {
   const inputConfig = document.createElement('button');
   inputConfig.textContent = '一键导入并生成配置';
   inputConfig.addEventListener('click', () => {
-    // 先给个提醒,防止多次点击
-    logEntry.textContent = '执行中';
     // 当按钮被点击时，删除整个菜单
     document.body.removeChild(HMANewMenuContainer);
     // 定义要执行的命令和目录
-    const command = `
-      echo "APP包名: ${HMAPackageName}";
-      echo "选择的模板配置名: ${ProfileName}";
-      echo "生成排除名单: ${GetExcludeList}";
-      ${MODDIR}/Hide_My_Applist/0unpack_config.sh" "/data/user/0/$(${HMAPackageName})/files/config.json" "$(${ProfileName})" "$(${GetExcludeList})
-    `;
+    const command = `"${MODDIR}/Hide_My_Applist/0unpack_config.sh" "/data/user/0/$(${HMAPackageName})/files/config.json" "$(${ProfileName})" "$(${GetExcludeList})";`;
     // 调用封装好的异步函数执行命令
     PrintExecuteCommandLogToUi(command);
   });
