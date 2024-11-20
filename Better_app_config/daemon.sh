@@ -1,8 +1,11 @@
 #!/bin/sh
 
-# 设置终端中文支持
-export LANG=zh_CN.UTF-8
-export LC_ALL=zh_CN.UTF-8
+# 设置终端UTF8支持
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# 赋值相关二进制路径到PATH供文件调用
+export PATH=/data/adb/ksu/bin/:/data/adb/ap/bin/:/data/adb/magisk/:$PATH
 
 # 强制等待android设备启动完成，防止未知错误
 echo "等待设备启动..."
@@ -160,14 +163,26 @@ if [[ "$1" == "noService" ]]; then
   echo "接受到非服务开关，退出执行"
   exit 0
 fi
-# 检查是否命令可用
-if ! command -v "$MODDIR/lib/inotifywait_arm" >/dev/null 2>&1; then
-  echo "无法调用 inotifywait_arm，退出执行"
+
+# 检查系统上是否已经安装了可用的工具
+if ! command -v inotifywait >/dev/null 2>&1; then
+# 检测当前的系统架构并设置调用自带的工具
+case "$(uname -m)" in
+  aarch64|arm64)
+    alias inotifywait="$MODDIR/lib/inotifywait_arm64"
+    ;;
+  *)
+    alias inotifywait="$MODDIR/lib/inotifywait_arm"
+    ;;
+esac
+fi
+if ! command -v inotifywait >/dev/null 2>&1; then
+  echo "无法调用 inotifywait，退出执行"
   return 2>/dev/null
   exit 0>/dev/null
 fi
 # 使用inotifywait持续监听指定文件夹创建和删除事件
-"$MODDIR/lib/inotifywait_arm" -m -e create -e delete --format '%w%f %e %f' "$dir" | while read path action file; do
+"$MODDIR/lib/inotifywait" -m -e create -e delete --format '%w%f %e %f' "$dir" | while read path action file; do
   # 执行主代码
   main_code
 done

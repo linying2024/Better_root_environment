@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# 设置终端UTF8支持
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 # 获取当前目录并进入
 MODDIR=${0%/*}
 cd "$MODDIR"

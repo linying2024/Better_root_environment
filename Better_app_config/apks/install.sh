@@ -12,35 +12,22 @@ if [[ "$MODDIR" != /*$TMP* ]]; then
   exec /bin/sh /$TMP/$(basename "$MODDIR")/$(basename "$0")
 fi
 
+# 赋值相关二进制路径到PATH供文件调用
+export PATH=/data/adb/ksu/bin/:/data/adb/ap/bin/:/data/adb/magisk/:$PATH
+
+# 启用magisk busybox的独立模式
 export ASH_STANDALONE=1
-# 准备 busybox 环境
-alias busybox="sh"
-# 检查是否可以切换命名空间
-if command -v nsenter >/dev/null 2>&1; then
-  workerPath="/data/adb"
-  # 设置busybox
-  set_busybox() {
-    # 检查文件是否存在
-    if [ -f $busyboxPath ]; then
-      CommandPrefix="$busyboxPath nsenter -m/proc/1/ns/mnt sh -c"
-      # 检查是否可以调用
-      if [ "$($CommandPrefix "echo 1")" = "1" ]; then
-        alias busybox="$CommandPrefix"
-      fi
-    fi
-  }
-  # 检查是否有 kernelsu 释放的busybox
-  rootType="ksu"
-  busyboxPath="$workerPath/$rootType/bin/busybox"
-  set_busybox
-  # 检查是否有 apatch 释放的busybox
-  rootType="ap"
-  busyboxPath="$workerPath/$rootType/bin/busybox"
-  set_busybox
-  # 检查是否有 magisk 释放的busybox
-  rootType="magisk"
-  busyboxPath="$workerPath/$rootType/busybox"
-  set_busybox
+
+# 检查busybox是否可以调用
+if command -v busybox >/dev/null 2>&1; then
+  # 检查是否可以切换命名空间
+  if command -v nsenter >/dev/null 2>&1; then
+    # 使用nsenter切换到root命名空间执行busybox
+    alias busybox="busybox nsenter -m/proc/1/ns/mnt sh -c"
+  fi
+else
+  # 如果没有busybox，回退到sh
+  alias busybox="sh"
 fi
 
 # 历遍当前文件夹里面的apk

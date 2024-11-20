@@ -21,24 +21,19 @@ if (!appContainer) {
 const MODDIR = "/data/adb/modules/better_app_config";
 
 // 封装异步函数，用于执行命令并返回输出
-// 接收三个参数, 传入的shell命令,如果不传入工作目录则使用默认值 MODDIR,以及一个布尔值 noBusybox
+// 接收四个参数, 传入的shell命令, 一个布尔值 verbose 详细模式, 如果不传入工作目录则使用默认值 MODDIR,一个布尔值 noBusybox
 // 如果 noBusybox 为 true，则直接执行传入的 command 否则，使用 busybox 来执行 command
-async function executeCommand(command, cwd = MODDIR, noBusybox = false) {
-  let cmdToExecute = noBusybox ? command : `${MODDIR}/lib/busybox_run.sh \"${command}\"`;
+async function executeCommand(command, verbose = false, cwd = MODDIR, noBusybox = false) {
+  const cmdToExecute = noBusybox ? command : `${MODDIR}/lib/busybox_run.sh "${command}"`;
   try {
-    // 执行命令并获取输出
     const { errno, stdout, stderr } = await exec(cmdToExecute, { cwd });
-    // 判断是否成功执行
     if (errno === 0) {
-      // 成功时返回标准输出
-      return stdout;
+      return verbose ? `标准输出流: \n${stdout}\n错误输出流: \n${stderr}\n退出代码: ${errno}` : stdout;
     } else {
-      // 失败时抛出错误，包含标准错误输出
-      throw new Error(`命令执行失败: \n${stderr}`);
+      return verbose ? `错误: \n标准输出流: \n${stdout}\n错误输出流: \n${stderr}\n退出代码: ${errno}` : `错误: \n${stderr}`;
     }
   } catch (error) {
-    // 捕获执行过程中的任何错误，并返回错误信息
-    return `错误: \n${error.message}`;
+    return verbose ? `错误: \n标准输出流: \n${error.stdout}\n错误输出流: \n${error.stderr}\n退出代码: ${error.errno}` : `错误: \n${error.message}`;
   }
 }
 
@@ -69,29 +64,33 @@ versiontitle.classList.add('allowClick');
 let versiontitle_clickCount = 0;
 versiontitle.addEventListener('click', function() {
   versiontitle_clickCount++;
-  if (versiontitle_clickCount === 1) {
-    ksu.toast('?');
-  };
-  if (versiontitle_clickCount === 2) {
-    ksu.toast('你干嘛??');
-  };
-  if (versiontitle_clickCount === 3) {
-    ksu.toast('你到底要做什么???');
-  };
-  if (versiontitle_clickCount === 4) {
-    ksu.toast('不要再点了啊!!!!');
-  };
-  if (versiontitle_clickCount === 5) {
-    ksu.toast('别点了,再点要坏掉了.....');
-  };
-  if (versiontitle_clickCount === 6) {
-    ksu.toast('真的不能再点了,真的会坏掉的啊......');
-  };
-  if (versiontitle_clickCount === 7) {
-    versiontitle_clickCount = 0;
-    ksu.toast('不听劝是吧?你完了.......');
-    window.location.href = "error.html";
-  };
+  switch (versiontitle_clickCount) {
+    case 1:
+      ksu.toast('?');
+      break;
+    case 2:
+      ksu.toast('你干嘛??');
+      break;
+    case 3:
+      ksu.toast('你到底要做什么???');
+      break;
+    case 4:
+      ksu.toast('不要再点了啊!!!!');
+      break;
+    case 5:
+      ksu.toast('别点了,再点要坏掉了.....');
+      break;
+    case 6:
+      ksu.toast('真的不能再点了,真的会坏掉的啊......');
+      break;
+    case 7:
+      versiontitle_clickCount = 0; // 重置点击计数
+      ksu.toast('不听劝是吧?你完了.......');
+      window.location.href = "error.html";
+      break;
+    default:
+      break;
+  }
 });
 // 将版本号和标题添加到容器中，确保标题从右边开始
 titleContainer.appendChild(versiontitle);
@@ -113,7 +112,7 @@ appContainer.appendChild(titleContainer);
 
 // 定义一个异步函数，用于将shell执行结果输出到日志区
 // 接收传入的命令,如果不传入工作目录则使用默认值 MODDIR
-async function PrintExecuteCommandLogToUi(command, cwd = MODDIR, noBusybox = false) {
+async function PrintExecuteCommandLogToUi(command, verbose = true ,cwd = MODDIR, noBusybox = false) {
   // 先给个提醒，防止多次点击
   logEntry.textContent = '执行中';
   // 设置延迟,让ui有机会更新出来
@@ -121,7 +120,7 @@ async function PrintExecuteCommandLogToUi(command, cwd = MODDIR, noBusybox = fal
     // 尝试执行
     try {
       // 调用封装好的异步函数执行命令
-      const result = await executeCommand(command, cwd, noBusybox);
+      const result = await executeCommand(command, verbose, cwd, noBusybox);
       // 将命令执行的结果直接设置到 <pre> 元素中
       logEntry.textContent = result;
       // 滚动日志区域到最新内容（如果日志区域有滚动条的话）
@@ -359,19 +358,19 @@ hmaButton.addEventListener('click', () => {
   setTimeout(async () => {
     try {
       // 获取内容
-      const HMAPackageName = await executeCommand('sed -n \'s/^HMAPackageName=//p\' ' + MODDIR + '/webroot/webUiConfig.prop', MODDIR);
+      const HMAPackageName1 = await executeCommand(HMAPackageName);
       // 设置元素的文本内容
-      document.getElementById('HMAPackageNameInput').value = `${HMAPackageName}`;
+      document.getElementById('HMAPackageNameInput').value = `${HMAPackageName1}`;
 
       // 获取内容
-      const ProfileName = await executeCommand('sed -n \'s/^ProfileName=//p\' ' + MODDIR + '/webroot/webUiConfig.prop', MODDIR);
+      const ProfileName1 = await executeCommand(ProfileName);
       // 设置元素的文本内容
-      document.getElementById('ProfileNameInput').value = `${ProfileName}`;
+      document.getElementById('ProfileNameInput').value = `${ProfileName1}`;
 
       // 获取内容
-      const GetExcludeList = await executeCommand('sed -n \'s/^GetExcludeList=//p\' ' + MODDIR + '/webroot/webUiConfig.prop', MODDIR);
+      const GetExcludeList1 = await executeCommand(GetExcludeList);
       // 设置元素的文本内容
-      document.getElementById('GetExcludeListInput').value = `${GetExcludeList}`;
+      document.getElementById('GetExcludeListInput').value = `${GetExcludeList1}`;
 
     } catch (error) {
       console.error('执行命令时发生错误:', error);

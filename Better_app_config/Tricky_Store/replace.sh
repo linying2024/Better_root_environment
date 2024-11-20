@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# 设置终端中文支持
-export LANG=zh_CN.UTF-8
-export LC_ALL=zh_CN.UTF-8
+# 设置终端UTF8支持
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 
 # 设置脚本文件夹
 moddir="${0%/*}"

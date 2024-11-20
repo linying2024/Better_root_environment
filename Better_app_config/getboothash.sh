@@ -1,8 +1,11 @@
 #!/bin/sh
 
-# 设置终端中文支持
-export LANG=zh_CN.UTF-8
-export LC_ALL=zh_CN.UTF-8
+# 设置终端UTF8支持
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# 赋值相关二进制路径到PATH供文件调用
+export PATH=/data/adb/ksu/bin/:/data/adb/ap/bin/:/data/adb/magisk/:$PATH
 
 # 设置当前文件夹
 MODDIR="${0%/*}"

@@ -14,6 +14,10 @@ KernelSUpath="/data/adb/ksud"
 APatchpath="/data/adb/apd"
 Magiskpath="magisk"
 
+# 设置终端UTF8支持
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 enforce_install_from_magisk_app() {
   if $BOOTMODE; then
     ui_print "- 不受支持的环境，请在app内安装"
@@ -251,6 +255,8 @@ echo "@@@@@@@@@@@@@@@@@@@"
 # 验证完成删除验证文件
 find "$oldMODPATH" -type f -name "*.sha256" -exec rm -f {} +
 
+chmod -R 777 "$oldMODPATH"
+
 # 设置解压路径
 unzippath="/sdcard"
 if [ "$ManagerType" = "APatch" ]; then
@@ -260,15 +266,11 @@ if [ "$ManagerType" = "APatch" ]; then
   sleep 3
 fi
 
-# 设置终端中文支持
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-
 # 检查是否在Apatch或者KernelSU中安装
 if [ -z "${KSU+set}" ] && [ -z "${APATCH+set}" ]; then
   if [[ "$MAGISK_VER_CODE" -lt "26402" ]]; then
     # 查找并检查是否有zygisk next 1.1.0+
-    NoSupportZip=$(find "$MODPATH/modules" -type f -regex ".*/Zygisk-Next-[1-9]\+\.[1-9]+\+\.[0-9]+.*\.zip")
+    NoSupportZip=$(find "$oldMODPATH/modules" -type f -regex ".*/Zygisk-Next-[1-9]\+\.[1-9]+\+\.[0-9]+.*\.zip")
     # 检查变量是否非空
     if [ -n "$NoSupportZip" ]; then
       # 删除找到的文件
@@ -298,7 +300,7 @@ if [ -z "${KSU+set}" ] && [ -z "${APATCH+set}" ]; then
   ui_print "- Magisk 版本号: $MAGISK_VER_CODE"
   if [ "$MAGISK_VER_CODE" -lt "27005" ]; then
     # 查找并检查是否有符合要求的文件
-    NoSupportZip=$(find "$MODPATH/modules" -type f -name "*Shamiko*.zip")
+    NoSupportZip=$(find "$oldMODPATH/modules" -type f -name "*Shamiko*.zip")
     # 检查变量是否非空
     if [ -n "$NoSupportZip" ]; then
       # 删除找到的文件
@@ -312,7 +314,7 @@ fi
 
 if [ "$ManagerType" = "APatch" ]; then
   # 查找并检查是否有符合要求的文件
-  NoSupportZip=$(find "$MODPATH/modules" -type f -name "*Shamiko*.zip")
+  NoSupportZip=$(find "$oldMODPATH/modules" -type f -name "*Shamiko*.zip")
   # 检查变量是否非空
   if [ -n "$NoSupportZip" ]; then
     # 删除找到的文件
@@ -327,22 +329,26 @@ fi
 echo "APK安装环节(1/3)"
 echo "正在将操作放到后台执行..."
 # 用子shell的方式并行处理并且将日志输出到临时文件
-TMP="/data/local/tmp"
+TMP2="/data/local/tmp"
+mkdir -p "$TMP2"
+# 创建标记,表示apk安装还没完成
+touch "$TMP2/waitInstall"
 echo 'oldSelinux=$(getenforce)  
 if [[ "$oldSelinux" == "Enforcing" ]]; then  
   echo "发现当前selinux模式为强制模式,将暂时切换为宽容模式使安装保持成功"  
   setenforce 0  
-fi' > "$TMP/installApk.sh"
-echo "for file in \"$MODPATH/apks\"/*.apk; do" >> "$TMP/installApk.sh"
+fi' > "$TMP2/installApk.sh"
+echo "for file in \"$oldMODPATH/apks\"/*.apk; do" >> "$TMP2/installApk.sh"
 echo '  echo "安装apk文件 $file"  
   pm install -r -t -d -g "$file"  
 done  
 if [[ "$oldSelinux" == "Enforcing" ]]; then  
   echo "还原selinux模式为强制模式"  
   setenforce 1  
-fi' >> "$TMP/installApk.sh"
-chmod 777 -R -f "$TMP"
-sh "$TMP/installApk.sh" > "$TMP/installApk.log" 2>&1 &
+fi' >> "$TMP2/installApk.sh"
+echo "rm $TMP2/waitInstall" >> "$TMP2/installApk.sh"
+chmod 777 -R -f "$TMP2"
+sh "$TMP2/installApk.sh" > "$TMP2/installApk.log" 2>&1 &
 
 # 模块安装
 echo "模块安装环节(2/3)"
@@ -388,9 +394,6 @@ else
   done
 fi
 
-echo "打印apk安装日志"
-echo "$(cat "$TMP/installApk.log")" && rm -f $TMP/installApk.log $TMP/installApk.sh
-
 echo "进入收尾工作"
 # 进行默认配置
 if [[ "$(getprop ro.build.version.sdk)" -lt 29 ]] && [ -d "$oldMODPATH/../safetynet-fix" ] || [ -d "$MODPATH/../../modules/safetynet-fix" ] ; then
@@ -414,7 +417,14 @@ if [ -d "$oldMODPATH/../zygisk-sui" ] || [ -d "$oldMODPATH/../../modules/zygisk-
   touch "$oldMODPATH/../../modules/zygisk-sui/disable"
 fi
 
+echo "复制免责声明"
 cp -af $oldMODPATH/*.md "$unzippath"
+echo "等待apk安装结束"
+until [ ! -f "$TMP2/waitInstall" ]; do sleep 1; done
+echo "打印apk安装日志"
+echo "$(cat "$TMP2/installApk.log")" && rm -f $TMP2/installApk.log $TMP2/installApk.sh
+echo "尝试为其他模块添加action.sh脚本"
+cp -arn "$oldMODPATH/action/zygisk_lsposed/action.sh" "$oldMODPATH/../zygisk_lsposed/"
 echo "安装操作完成，您可以准备重启了"
 
 # 检查文件是否存在

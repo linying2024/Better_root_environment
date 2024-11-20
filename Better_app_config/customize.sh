@@ -8,6 +8,10 @@ LATESTARTSERVICE=true
 REPLACE="
 "
 
+# 设置终端UTF8支持
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 enforce_install_from_magisk_app() {
   if $BOOTMODE; then
     ui_print "- 不受支持的环境，请在app内安装"
@@ -47,6 +51,31 @@ echo "-------------------------"
 filepath="/data/adb/modules/better_app_config"
 # 解压模块到模块文件夹
 unzip -o "$ZIPFILE" -d "$MODPATH" >&2;
+
+echo "APK安装"
+echo "正在将操作放到后台执行..."
+# 用子shell的方式并行处理并且将日志输出到临时文件
+TMP2="/data/local/tmp"
+mkdir -p "$TMP2/BAC"
+# 创建标记,表示apk安装还没完成
+touch "$TMP2/BAC/waitInstall"
+echo 'oldSelinux=$(getenforce)  
+if [[ "$oldSelinux" == "Enforcing" ]]; then  
+  echo "发现当前selinux模式为强制模式,将暂时切换为宽容模式使安装保持成功"  
+  setenforce 0  
+fi' > "$TMP2/BAC/installApk.sh"
+echo "for file in \"$MODPATH/apks\"/*.apk; do" >> "$TMP2/BAC/installApk.sh"
+echo '  echo "安装apk文件 $file"  
+  pm install -r -t -d -g "$file"  
+done  
+if [[ "$oldSelinux" == "Enforcing" ]]; then  
+  echo "还原selinux模式为强制模式"  
+  setenforce 1  
+fi' >> "$TMP2/BAC/installApk.sh"
+echo "rm $TMP2/BAC/waitInstall" >> "$TMP2/BAC/installApk.sh"
+chmod 777 -R -f "$TMP2"
+sh "$TMP2/BAC/installApk.sh" > "$TMP2/BAC/installApk.log" 2>&1 &
+
 # 检查是不是安装过
 if [[ -d "$filepath" ]]; then
   echo "保留配置更新"
@@ -116,21 +145,7 @@ if [ -f "/sdcard/nomenu" ]; then
   rm -f $MODPATH/Hide_My_Applist/whitelist.mode
 fi
 
-# 设置终端中文支持
-export LANG=zh_CN.UTF-8
-export LC_ALL=zh_CN.UTF-8
-
-echo "APK安装"  
-oldSelinux=$(getenforce)  
-if [[ "$oldSelinux" == "Enforcing" ]]; then  
-  echo "发现当前selinux模式为强制模式,将暂时切换为宽容模式使安装保持成功"  
-  setenforce 0  
-fi  
-for file in "$MODPATH/apks"/*.apk; do  
-  echo "安装apk文件 $file"  
-  pm install -r -t -d -g "$file"  
-done  
-if [[ "$oldSelinux" == "Enforcing" ]]; then  
-  echo "还原selinux模式为强制模式"  
-  setenforce 1  
-fi
+echo "等待apk安装结束"
+until [ ! -f "$TMP2/BAC/waitInstall" ]; do sleep 1; done
+echo "打印apk安装日志"
+echo "$(cat "$TMP2/BAC/installApk.log")" && rm -r -f $TMP2/BAC
