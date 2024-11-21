@@ -1,0 +1,73 @@
+name: "Bug report/反馈 Bug"
+description: "Report errors or unexpected behavior./反馈错误或异常行为"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting issues!
+
+        To make it easier for us to assist you, please enter detailed information below. Please use a Englist title
+
+        感谢汇报问题！
+        为了使我们更好地帮助你，请提供以下信息。
+        为了防止重复汇报，标题请务必使用英文
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: "Detailed problem description/详细的问题描述："
+      placeholder: "Provide a detailed description of your problem/详细描述您的问题"
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: "Expected behaviour/预期行为："
+      placeholder: "Tell us what should happen/正常情况下应该发生什么"
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: "Actual behaviour/实际行为："
+      placeholder: "Tell us what happens instead/实际上发生了什么"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: "Steps to reproduce/复现步骤："
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: checkboxes
+    id: requirements
+    attributes:
+      label: "Requirement/要求："
+      options:
+        - label: "This is not my operational issue/这不是我的操作问题"
+          required: true
+  - type: textarea
+    id: device-info
+    attributes:
+      label: "Complete Device Information/完整设备信息："
+      value: |
+        Device Model/设备型号: Xiaomi Redmi K20 Pro 
+        Specific Operating System/具体操作系统: China Miui 12.5.6 
+        Android Version 和 Linux Kernel Version Number/安卓版本与Linux内核版本号: Android 11,Kernel 4.19.336 
+        Root Implementation Method 和 Manager Version Number/Root实现方法与管理器版本号: KernelSU Kernel Mode,11986 
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Detailed relevant logs/详细的相关日志:"
+      description: |
+        For usage issues, please provide the log zip saved from manager; for activation issues. Without logs zip, the issue will be closed. /使用问题请提供从管理器保存的日志压缩包。没有日志附件的问题会被关闭[install.log/ScreenShot.jpg]
+      placeholder: |
+        Upload logs zip by clicking the bar on the bottom. Upload logs to other websites or using external links is prohibited. /点击文本框底栏上传日志压缩包，禁止上传到其它网站或使用外链提供日志
+    validations:
+      required: true
