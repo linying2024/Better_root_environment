@@ -35,20 +35,29 @@
 
 ### 安装流程
 
-1.下载最新的模块并完成前置要求。（也就是说，手动从GitHub下载ZygiskNext和TrickyStore并将它们放入这个模块中）
+1.下载最新的模块并完成前置要求。（也就是说，手动从GitHub下载ZygiskNext和TrickyStore并将它们放入这个模块的指定目录中）
+
 tip：确保你的root是新安装的并且是干净的。<sup>*推荐</sup>
+
 2.刷入这个模块并重启你的设备。
-3.启动后，等待两个应用程序弹出（Hide My AppList - Mod，Key Authentication）。
+
+3.启动后，等待两个应用程序弹出（隐藏应用列表-改，密钥认证）。
+
 tip:您可能需要随便在 隐藏应用列表-改 的应用管理中启用一个app,否则可能自动导入配置失败
+
 4.再次重启你的设备。
+
 5.启动后，等待一个应用程序弹出。
+
 <pre>
 tip:如果再次弹出两个应用，可能是因为你的启动哈希无法自动获取。
 如果你没有关闭AVB验证或在你的Android设备上刷入第三方ROM，你不需要这个操作。
 你可以通过执行 `touch /data/adb/modules/better_app_config/gethash.done` 来忽略这个操作
 也可以执行 `/data/adb/modules/better_app_config/getboothash.sh` 再次获取
 </pre>
+
 6.再次重启你的设备
+
 7.开始享受吧！
 
 ## 项目github主页
@@ -75,6 +84,9 @@ tip:如果再次弹出两个应用，可能是因为你的启动哈希无法自�
 #### 爱发电 ifdian.net/a/linying2024
 #### Q群 419239345
 
+### 欢迎 `Pull requests` 贡献代码帮助我做的更好 / Welcome 'Pull requests' to contribute code to help me do better
+
+#### 具体要求请查看公告 (仅允许中文,英文) / Please refer to the announcement for specific requirements (Chinese and English only allowed)
 
 ## 这个模块做了以下操作
 
@@ -88,6 +100,7 @@ tip:如果再次弹出两个应用，可能是因为你的启动哈希无法自�
 
 3.安装LSPosed1.8.0[https://github.com/LSPosed/LSPosed/releases/tag/v1.8.0]</br>
 ~~3.安装JingMatrix的LSPosed[https://github.com/JingMatrix/LSPosed]~~
+
 3.安装来着互联网的Lsposed npm[基于LSPosed npm open](https://github.com/5ec1cff/LSPosed) 7075去日志特征版来解决牛头人徒劳的隐藏(10)和
 牛头人邪恶服务(2)的问题,并用于激活隐藏app列表Xposed插件模块
 

@@ -182,7 +182,7 @@ if ! command -v inotifywait >/dev/null 2>&1; then
   exit 0>/dev/null
 fi
 # 使用inotifywait持续监听指定文件夹创建和删除事件
-"$MODDIR/lib/inotifywait" -m -e create -e delete --format '%w%f %e %f' "$dir" | while read path action file; do
+inotifywait -m -e create -e delete --format '%w%f %e %f' "$dir" | while read path action file; do
   # 执行主代码
   main_code
 done

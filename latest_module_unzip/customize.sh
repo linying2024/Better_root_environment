@@ -309,6 +309,29 @@ if [ -z "${KSU+set}" ] && [ -z "${APATCH+set}" ]; then
       ui_print "! 发现安装程序内可能含有Shamiko模块, 已为您移除。因为您的面具版本不支持"
       ui_print "*********************************************************"
     fi
+  else
+    # 查找并检查是否有符合要求的文件
+    NoSupportZip=$(find "$oldMODPATH/modules" -type f -name "*Shamiko*.zip")
+    # 检查变量是否非空
+    if [ -n "$NoSupportZip" ]; then
+      # 使用for命令查找指定目录下的所有.zip文件
+      for ZIPFILE in "$oldMODPATH/modules/magisk27005+"/*.zip; do
+        echo "安装模块文件 $ZIPFILE"
+        # 调用管理器install_module
+        install_module
+        if [ $? -eq 0 ]; then
+          echo "安装完成"
+        else
+          echo "使用 默认 安装失败，尝试拉起命令行安装"
+          $cliCommand "$ZIPFILE"
+          if [ $? -eq 0 ]; then
+            echo "安装完成"
+          else
+            echo "使用 $manager_path 安装失败"
+          fi
+        fi
+      done
+    fi
   fi
 fi
 

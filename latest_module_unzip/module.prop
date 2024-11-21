@@ -1,7 +1,7 @@
 id=Better_root_environment_installer
 name=更好的root环境安装器
-version=v1.0.7
-versionCode=2024112100
+version=v1.0.7-2
+versionCode=2024112118
 author=琳璎 | linying
 description=一个快速帮助用户配置Root环境隐藏的模块 | A hidden module to quickly help users configure the Root environment
 updateJson=https://cf.linying.eu.org/update-fastconfig-mod.json

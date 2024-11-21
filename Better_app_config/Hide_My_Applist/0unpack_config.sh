@@ -11,6 +11,7 @@ MODDIR="${0%/*}"
 # 查找命令行参数是否为空，为空才默认值
 if [ -n "$1" ]; then
   json_file="$1"
+  echo "传入json文件路径: $1"
 else
   json_file="$MODDIR/HMA_Config.json"
 fi
@@ -57,6 +58,7 @@ if [[ -f "$json_file" ]]; then
   # 查找命令行参数是否为空，为空才解析菜单
   if [ -n "$2" ]; then
     configname="$2"
+    echo "选择的模板名: $2"
   else
     # 解析 JSON 获取 templates 键的值
     templates=$(jq -r '.templates | keys[]' $json_file)
@@ -111,6 +113,7 @@ get_excludelist() {
 }
 # 查找命令行参数是否为空
 if [ -n "$3" ]; then
+  echo "是否获取排除名单: $3"
   if [[ "$3" == "true" ]]; then
     get_excludelist
   fi

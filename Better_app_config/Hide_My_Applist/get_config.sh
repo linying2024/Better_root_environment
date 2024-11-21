@@ -15,6 +15,7 @@ blacklist="$MODDIR/blacklist.txt"
 excludelist="$MODDIR/excludelist.txt"
 applist="$MODDIR/../tmp/applist.txt"
 temptext="$MODDIR/../tmp/temp.txt"
+PackageName="fuck.app.check"
 
 # 强制等待android设备启动完成，防止未知错误
 echo "等待设备启动..."
@@ -24,15 +25,17 @@ echo "设备已启动" | tee Start_Done
 # 检查是否以root权限执行
 if [ "$(id -u)" -ne 0 ]; then
   echo "警告：未以root权限执行，接下来的操作可能失败"
-fi
-
-# 尝试读取
-if [ "$(id -u)" == "0" ]; then
-  cat /data/system/hide_my_applist_*/config.json > /dev/null
-  if [ $? -eq 0 ]; then
-    echo "检测到隐藏应用列表的系统服务文件，继续执行"
-  else
-    echo "未检测到隐藏应用列表的系统服务文件，中断执行"
+  # # 尝试读取
+  # cat /data/system/hide_my_applist_*/config.json > /dev/null
+  # if [ $? -eq 0 ]; then
+    # echo "检测到隐藏应用列表的系统服务文件，继续执行"
+  # else
+    # echo "未检测到隐藏应用列表的系统服务文件，中断执行"
+    # exit 173
+  # fi
+  # 过滤文件字符串
+  if [ -z "$(cat $applist | grep "$PackageName")"]; then
+    echo "没有安装被修改的隐藏应用列表"
     exit 173
   fi
 fi

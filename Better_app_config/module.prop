@@ -1,7 +1,7 @@
 id=better_app_config
 name=更好的app配置
-version=v1.0.3
-versionCode=2024112100
+version=v1.0.3-2
+versionCode=2024112108
 author=琳璎 | linying
 description=使用管理器特性持续在后台等待app列表更新并自动生成完整的全局配置文件注入使用
 updateJson=https://cf.linying.eu.org/update-betterappconfig.json
