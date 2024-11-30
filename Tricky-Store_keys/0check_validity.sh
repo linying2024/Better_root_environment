@@ -292,26 +292,26 @@ find "$directory" -type f -name "*.xml" | while read -r xml_file; do
   # 指定吊销列表缓存位置
   revokelistTempPath="./revoke_list.json"
   # 检查文件是否是指定时间内的
-if [ -f "$revokelistTempPath" ] && [ $(( $(date +%s) - $(date -r "$revokelistTempPath" +%s) )) -lt 900 ]; then
-  echo "信息: 吊销文件是15分钟内的,不再次下载"
-else
-  echo "信息: 吊销文件不是15分钟内的或不存在, 开始下载..."
-  # 选择下载工具，获取吊销列表(只尝试一次，并且最大链接时间为3秒)
-  if [[ "$download_type" == "wget" ]]; then
-    wget --tries=1 --timeout=3 -O "$revokelistTempPath" "$revoke_list_url" &> /dev/null
+  if [ -f "$revokelistTempPath" ] && [ $(( $(date +%s) - $(date -r "$revokelistTempPath" +%s) )) -lt 900 ]; then
+    echo "信息: 吊销文件是15分钟内的,不再次下载"
   else
-    curl --connect-timeout 3 --retry 0 --silent --output "$revokelistTempPath" "$revoke_list_url"
+    echo "信息: 吊销文件不是15分钟内的或不存在, 开始下载..."
+    # 选择下载工具，获取吊销列表(只尝试一次，并且最大链接时间为3秒)
+    if [[ "$download_type" == "wget" ]]; then
+      wget --tries=1 --timeout=3 -O "$revokelistTempPath" "$revoke_list_url" &> /dev/null
+    else
+      curl --connect-timeout 3 --retry 0 --silent --output "$revokelistTempPath" "$revoke_list_url"
+    fi
+  
+    # 检查下载是否成功
+    if [ ! -f "$revokelistTempPath" ] && [ ! -s "$revokelistTempPath" ]; then
+      rm -f "$revokelistTempPath"
+      echo "❌❌❌错误: 下载吊销列表失败,请检查网络连接,文件权限等"
+    else
+      # 更新文件时间戳
+      touch "$revokelistTempPath"
+    fi
   fi
-
-  # 检查下载是否成功
-  if [ ! -f "$revokelistTempPath" ] && [ ! -s "$revokelistTempPath" ]; then
-    rm -f "$revokelistTempPath"
-    echo "❌❌❌错误: 下载吊销列表失败,请检查网络连接,文件权限等"
-  else
-    # 更新文件时间戳
-    touch "$revokelistTempPath"
-  fi
-fi
 
   # 检查证书是否在吊销列表中(忽略大小写)
   revoked=0
@@ -324,9 +324,9 @@ fi
   done
 
   if [ $revoked -eq 1 ]; then
-    echo "信息: 没有在吊销列表找到该序列号,您的证书是有效的"
     file_rename "Ban_" "0"
-  else 
+  else
+    echo "信息: 没有在吊销列表找到该序列号,您的证书是有效的"
     file_rename "Ban_" "1"
   fi
   echo "=============================="
