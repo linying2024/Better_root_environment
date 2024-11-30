@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # set -x
-echo "Version: 0.3(2024234049)"
+echo "Version: 0.6(20241130131209)"
 echo "Tip: MT管理器请使用终端扩展包执行"
 
 # 指定目录
@@ -18,10 +18,10 @@ check_command() {
 }
 # 检查 xmlstarlet openssl wget curl 是否安装
 if check_command "xmlstarlet"; then
-  get_cert="extract_certificate_xmlstarlet"
+  xmlTool="xmlstarlet"
 else
   echo "⚠⚠⚠警告: xmlstarlet 命令不可用,推荐使用 xmlstarlet 以减少错误"
-  get_cert="extract_certificate"
+  xmlTool="shell"
 
   if ! check_command "tr"; then
     echo "错误: 没有 tr 工具,脚本无法继续执行"
@@ -52,29 +52,29 @@ extract_serial_number() {
 # 提取指定证书 xmlstarlet方法
 extract_certificate_xmlstarlet() {
   local xml_file="$1"
-  local serial_number="$2"
+  local index="$2"
   xmlstarlet sel -t -v "(AndroidAttestation/Keybox/Key/CertificateChain/
-  Certificate)[$serial_number]" "$xml_file"
+  Certificate)[$index]" "$xml_file"
 }
 
 # 提取指定序数的证书 shell方法
-extract_certificate() {
+extract_certificate_shell() {
   local file="$1"
-  local serial_number="$2"
+  local index="$2"
 
   # 获取所有 BEGIN CERTIFICATE 行的行号
   begin_lines=($(grep -n "<Certificate format=\"pem\">" "$file" | cut -d: -f1))
   # 计算 END CERTIFICATE 行的行号
   end_lines=($(grep -n "</Certificate>" "$file" | cut -d: -f1))
 
-  if [ ${#begin_lines[@]} -lt $serial_number ]; then
+  if [ ${#begin_lines[@]} -lt $index ]; then
     echo "错误: 指定的序列号超过了证书的数量"
     return 1
   fi
 
   # 获取指定序数的证书的开始和结束行号
-  begin_line=${begin_lines[$((serial_number - 1))]}
-  end_line=${end_lines[$((serial_number - 1))]}
+  begin_line=${begin_lines[$((index - 1))]}
+  end_line=${end_lines[$((index - 1))]}
 
   # 提取证书内容，并且去掉可能的头尾，和换行空格等
   cert_code="$(sed -n "${begin_line},${end_line}p" "$file" | sed -n '2,$p' | sed '$d' | sed 's/-----BEGIN CERTIFICATE-----//' | sed 's/-----END CERTIFICATE-----//' | tr -d ' \n\t\r')"
@@ -83,6 +83,31 @@ extract_certificate() {
 $cert_code
 -----END CERTIFICATE-----"
 }
+
+# 定义一个函数来提取指定项 xmlstarlet方法
+extract_certificate_custom_xmlstarlet() {
+  local index="$1"
+  local file="$2"
+  local keyName="$3"
+  # 提取字符串
+  xmlstarlet sel -t -c "(AndroidAttestation/Keybox/Key/$keyName)[$index]" "$file"
+}
+
+# 定义一个函数来提取指定项 shell方法
+extract_certificate_custom_shell() {
+  local index="$1"
+  local file="$2"
+  local keyName="$3"
+  # 提取字符串
+  cat $file | awk "
+    /<${keyName}>/ {if (++count == ${index}) flag=1}
+    {if (flag) print}
+    /<\/${keyName}>/ {if (flag && count == ${index}) flag=0}
+  " | sed "1s/^.*<${keyName}>//; \$s/<\/${keyName}>.*$//"
+}
+
+# 指定证书缓存位置
+TempPath="./Temp.pem"
 
 # 遍历指定目录下的所有 .xml 文件
 find "$directory" -type f -name "*.xml" | while read -r xml_file; do
@@ -93,20 +118,32 @@ find "$directory" -type f -name "*.xml" | while read -r xml_file; do
     continue
   fi
 
-  # 指定证书缓存位置
-  certTempPath="./certTemp.pem"
-  # 提取第一个证书（EC）和第四个证书（RSA）
-  echo "$($get_cert "$xml_file" "1")" > "$certTempPath"
-  # 获取序列号
-  ec_cert_sn="$(extract_serial_number "$certTempPath")"
-  echo "$($get_cert "$xml_file" "4")"  > "$certTempPath"
-  rsa_cert_sn="$(extract_serial_number "$certTempPath")"
+  # 提取所有证书
+  echo "信息: 提取所有证书..."
+  certificates=()
+  serial_numbers=()
+# 循环提取前两个证书链
+for i in $(seq 1 2); do
+  if [ $i -eq 1 ]; then
+    certType="EC"
+  elif [ $i -eq 2 ]; then
+    certType="RSA"
+  else
+    echo "错误: 异常的证书链数"
+  fi
+  extract_certificate_custom_$xmlTool "$i" "$xml_file" "CertificateChain" > "$TempPath.chain"
 
-  echo "信息: EC 证书序列号： $ec_cert_sn"
-  echo "信息: RSA 证书序列号： $rsa_cert_sn"
+  for i in $(seq 1 $(grep -c "<Certificate format=\"pem\">" "$TempPath.chain")); do
+    echo "$(extract_certificate_$xmlTool "$TempPath.chain" "$i")" > "$TempPath"
+    cert_sn="$(extract_serial_number "$TempPath")"
+    certificates+=("$TempPath")
+    serial_numbers+=("$cert_sn")
+    echo "信息: $certType证书 $i 序列号： $cert_sn"
+  done
+done
 
   # 检查变量是否为空
-  if [ -z $ec_cert_sn ] && [ -z $rsa_cert_sn ]; then
+  if [ -z "${serial_numbers[0]}" ]; then
     echo "错误: 没有获取到序列号,跳过当前文件"
     continue
   fi
@@ -133,8 +170,16 @@ find "$directory" -type f -name "*.xml" | while read -r xml_file; do
   fi
 
   # 检查证书是否在吊销列表中(忽略大小写)
-  if cat "$revokelistTempPath" | grep -i "$ec_cert_sn" > /dev/null || cat "$revokelistTempPath" | grep -i "$rsa_cert_sn" > /dev/null; then
-    echo "信息: 您的 Keybox 已吊销!"
+  revoked=0
+  for cert_sn in "${serial_numbers[@]}"; do
+    if cat "$revokelistTempPath" | grep -i "$cert_sn" > /dev/null; then
+      echo "信息: 证书序列号 $cert_sn 已吊销!"
+      revoked=1
+      break
+    fi
+  done
+
+  if [ $revoked -eq 1 ]; then
     base_name=$(basename "$xml_file")
     if [[ $base_name == Ban_* ]]; then
       # 如果文件名已经有Ban_前缀，则不添加
@@ -160,3 +205,4 @@ find "$directory" -type f -name "*.xml" | while read -r xml_file; do
   fi
   echo "=============================="
 done
+rm "$TempPath" "$TempPath.chain"
