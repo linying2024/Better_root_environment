@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # set -x
-echo "Version: 1.0(20241201001315)"
+echo "Version: 1.0.1(20241206012311)"
 echo "Tip: MT管理器请使用终端扩展包执行"
 
-# 指定目录
+# 指定目录，不指定默认为当前目录
 directory=${1:-./}
 
 # 命令检查
@@ -45,6 +45,7 @@ fi
 
 # 重命名文件
 file_rename() {
+  # 第一个参数为标记字符串，第二个参数为是否移除字符串，默认为0
   local Mark="$1"
   local remove="${2:-0}"
 
@@ -84,10 +85,23 @@ file_rename() {
   fi
 }
 
+# 检查证书链
+check_certificate_chain() {
+  # 第一个参数传入用于签发的证书，第二个传入需要验证的证书
+  # 示例调用
+  # check_certificate_chain "cert_ca.pem" "cert.pem"
+  local cert_ca="$1"
+  local cert="$2"
+  # 调用openssl验证证书链(不验证有效期)
+  openssl verify -partial_chain -CAfile "$cert_ca" -no_check_time "$cert" >/dev/null 2>&1
+}
 # 检查证书是否在有效期内
 check_certificate_validity() {
-  # 定义一个函数，接受一个证书文件路径作为参数
+  # 第一个参数传入证书路径
+  # 示例调用
+  # check_certificate_validity "cert.pem"
   local certificate="$1"
+
   # 获取当前的UTC时间戳
   local current_timestamp=$(date -u +%s)
   # 获取当前的UTC时间，格式为年.月.日 时:分:秒 UTC
@@ -112,13 +126,14 @@ check_certificate_validity() {
     return 1
   fi
   # 如果当前时间在证书的有效期内，输出证书有效信息
-  echo "信息: 当前时间 $current_time,证书在有效期内"
+  echo "信息: 证书时间为$not_before_time - $not_after_time,证书在有效期内"
   return 0
 }
 # 检查私钥是否匹配
 certKeyCheck() {
+  # 第一个参数传入证书类型 第二个参数传入证书文件路径 第三个参数传入私钥
   # 示例调用
-  # certKeyCheck "ec" "0cert.pem" "0certkey.pem"
+  # certKeyCheck "ec" "cert.pem" "certkey.pem"
   local certType="$1"
   local certFile="$2"
   local certKeyFile="$3"
@@ -148,6 +163,9 @@ certKeyCheck() {
 }
 
 # 函数统一变量 $1为文件 $2为序数 $3为xml键名 $4为xml键名的属性名
+# 示例调用
+# extract_custom_xml_shell "cert.pem" "1" "cert" ' type="ec"'
+
 # 提取证书序列号
 extract_serial_number() {
   openssl x509 -inform PEM -noout -serial -in "$1" | cut -d'=' -f2
@@ -251,7 +269,7 @@ find "$directory" -type f -name "*.xml" | while read -r xml_file; do
         rm -f "$TempPath.key"
         echo -n "$cert" > "$TempPath.old"
       else
-        openssl verify -partial_chain -CAfile "$TempPath" "$TempPath.old" >/dev/null 2>&1
+        check_certificate_chain "$TempPath" "$TempPath.old"
         if [ $? -ne 0 ]; then
           echo "❌❌❌错误: 证书链验证失败"
           file_rename "Error_" "0"
