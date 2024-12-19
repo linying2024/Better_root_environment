@@ -149,7 +149,7 @@ if [ -f "/sdcard/nomenu" ]; then
   echo "在/sdcard/发现文件nomenu，跳过音量键菜单"
 else
   # 获取当前运行的应用包名,并根据包名输出不同的提示信息
-  case "$(dumpsys window | grep -o 'mCurrentFocus=[^;]*' | awk -F'[{}]' '{print $2}' | cut -d'/' -f1 | tr ' ' '\n' | awk 'END {print}' | awk '{print $NF}')" in
+  case "$(dumpsys window | grep -o 'mCurrentFocus=[^;]*' | sed -n 's/.*{\(.*\)}.*/\1/p' | sed 's/.* \(.*\)/\1/' | cut -d'/' -f1 | awk '{print $NF}')" in
     io.github.huskydg.magisk)
       echo "您正在使用 Magisk Delta 或 Kitsune Mask"
       echo "该版本已不受支持,建议更换其他root方式"

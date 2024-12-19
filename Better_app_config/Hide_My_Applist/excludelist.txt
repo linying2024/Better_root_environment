@@ -11,6 +11,7 @@ com.tsng.hidemyapplist
 com.tsng.dyhhvf
 fuck.app.check
 org.lsposed.manager
+io.github.a13e300.ksuwebui
 
 # app
 com.android.shell
@@ -20,8 +21,11 @@ com.byyoung.extract
 com.byyoung.setting
 com.coderstory.toolkit
 com.omarea.vtools
+com.topmiaohan.superlist
+com.topmiaohan.hidebllist
 
 # check
+io.github.vvb2060.keyattestation.local
 io.github.vvb2060.keyattestation
 io.github.vvb2060.mahoshojo
 icu.nullptr.nativetest

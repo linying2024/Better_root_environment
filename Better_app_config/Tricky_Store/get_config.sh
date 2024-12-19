@@ -4,13 +4,15 @@
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+# 设置脚本文件夹
+moddir="${0%/*}"
+
+[ -f "$moddir/disable" ] && exit 0
+
 # 强制等待android设备启动完成，防止未知错误
 echo "等待设备启动..."
 until [ -d "/sdcard/Android" ]; do echo "等待1s中..." && sleep 1; done
 echo "设备已启动" | tee Start_Done
-
-# 设置脚本文件夹
-moddir="${0%/*}"
 
 # 初始化变量
 # 设置模块路径参数

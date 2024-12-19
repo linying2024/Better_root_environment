@@ -17,6 +17,8 @@ applist="$MODDIR/../tmp/applist.txt"
 temptext="$MODDIR/../tmp/temp.txt"
 PackageName="fuck.app.check"
 
+[ -f "$MODDIR/disable" ] && exit 0
+
 # 强制等待android设备启动完成，防止未知错误
 echo "等待设备启动..."
 until [ -d "/sdcard/Android" ]; do echo "等待1s中..." && sleep 1; done

@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# 忽略默认的正常退出信号 15
+trap '' SIGTERM
+# 忽略Ctrl+C的中断退出信号 2
+#trap '' SIGINT
+
 # 设置终端UTF8支持
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -181,10 +186,65 @@ if ! command -v inotifywait >/dev/null 2>&1; then
   return 2>/dev/null
   exit 0>/dev/null
 fi
-# 使用inotifywait持续监听指定文件夹创建和删除事件
-inotifywait -m -e create -e delete --format '%w%f %e %f' "$dir" | while read path action file; do
-  # 执行主代码
-  main_code
+
+rmshizuku() {
+# 删掉shizuku的app释放的库文件(检测这种东西也是无语住了)
+# 初始化循环次数
+local runCount=0
+# 无限循环，确保脚本在inotifywait命令意外退出时能够重启
+while true; do
+  # 设置循环上限，防止出现意外时无限启动监听进程
+  [ 100 -le "$runCount" ] && break
+  # 运行次数递增
+  runCount=$(( $runCount + 1 ))
+  # 定义临时目录变量
+  TMP="/data/local/tmp"
+  # 创建临时目录，如果不存在的话
+  mkdir -p "$TMP"
+  # 定义一个函数，用于删除特定的文件和目录
+  rmfile() {
+    # 删除/shizuku/目录及其内容
+    rm -rf "$TMP/shizuku/"
+    # 删除/shizuku_starter文件
+    rm -f "$TMP/shizuku_starter"
+  }
+  # 调用函数，立即删除一次特定的文件和目录
+  rmfile
+  # 使用inotifywait监控TMP目录下的创建事件
+  inotifywait -m -e create -e delete --format '%w%f %e %f' "$TMP" | while read path action file; do
+    # 检查创建的文件或目录是否是/shizuku/或/shizuku_starter
+    if [ "$file" == "shizuku" ] || [ "$file" == "shizuku_starter" ]; then
+      # 如果是，则打印消息并删除这些文件和目录
+      echo "发现shizuku文件,开始删除"
+      sleep 5
+      rmfile
+    fi
+  done
+done
+}
+#rmshizuku &
+
+# 初始化循环次数
+local runCount=0
+# 无限循环以保持脚本运行
+while true; do
+  # 设置循环上限，防止出现意外时无限启动监听进程
+  [ 100 -le "$runCount" ] && break
+  # 运行次数递增
+  runCount=$(( $runCount + 1 ))
+  # 启动inotifywait命令，并将其PID输出到PID文件
+  inotifywait -m -e create -e delete --format '%w%f %e %f' "$dir" | while read path action file; do
+    # 执行主代码
+    main_code
+  done &
+  # 获取最后一个后台进程的pid
+  pid="$!"
+  # 打印PID写入文件
+  echo "inotifywait的进程pid预计为: $(( $pid - 1 ))"
+  # 等待inotifywait进程结束
+  wait $pid
+  # 如果inotifywait进程结束，则可能是由于某些错误，提示一下
+  echo "inotifywait未启动,尝试重新启动它..."
 done
 
 return 2>/dev/null

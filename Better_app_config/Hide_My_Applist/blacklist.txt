@@ -11,8 +11,10 @@ com.tsng.hidemyapplist
 com.tsng.dyhhvf
 fuck.app.check
 org.lsposed.manager
+io.github.a13e300.ksuwebui
 
 # check
+io.github.vvb2060.keyattestation.local
 io.github.a13e300.dsf_detector
 io.github.huskydg.memorydetector
 io.github.vvb2060.keyattestation
@@ -37,6 +39,8 @@ com.byyoung.extract
 com.byyoung.setting
 com.coderstory.toolkit
 com.omarea.vtools
+com.topmiaohan.superlist
+com.topmiaohan.hidebllist
 com.miui.securitycenter
 
 # Other

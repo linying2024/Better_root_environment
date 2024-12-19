@@ -96,6 +96,23 @@ if [[ -d "$filepath" ]]; then
   ' \;
   # 强制删除白名单标记文件
   rm -f "$MODPATH/Hide_My_Applist/whitelist.mode"
+  
+  # 补全webui配置
+  # 读取源文件的每一行，排除注释行
+  while IFS='=' read -r key value || [[ -n "$key" ]]; do
+    # 去除前后空白字符
+    key=$(echo "$key" | tr -d '\r\n\t' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    value=$(echo "$value" | tr -d '\r\n\t' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+  
+    # 检查原文件中是否存在以$key=开头的行
+    if ! grep -q "^$key=" "$filepath/webroot/webUiConfig.prop"; then
+      # 如果不存在，则追加到原文件末尾
+      echo "$key=$value" >> "$filepath/webroot/webUiConfig.prop"
+    fi
+  done < <(grep -v '^#' "$MODPATH/webroot/webUiConfig.prop")
+  # 取回webui配置
+  cp -ar $filepath/webroot/webUiConfig.prop "$MODPATH/webroot/webUiConfig.prop"
+  
   # 尝试取回所有可能的配置文件(但是不覆盖文件)
   cp -arn $filepath/Tricky_Store/* "$MODPATH/Tricky_Store"
   cp -arn $filepath/Hide_My_Applist/* "$MODPATH/Hide_My_Applist"
@@ -143,6 +160,7 @@ cp -af "$MODPATH/Tricky_Store/spoof_build_vars" "$ts_config_dir"
 if [ -f "/sdcard/nomenu" ]; then
   echo "在/sdcard/发现文件nomenu,使隐藏应用列表保持黑名单模式"
   rm -f $MODPATH/Hide_My_Applist/whitelist.mode
+  sed -i 's/^WhtielistHMA=.*/WhtielistHMA=false/' "$MODPATH/webroot/webUiConfig.prop"
 fi
 
 echo "等待apk安装结束"
