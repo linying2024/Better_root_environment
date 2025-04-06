@@ -1,3 +1,6 @@
+# 停止更新/Stop updating
+### 因我个人原因已不再维护该项目,可寻找其他同类项目替代/Due to personal reasons, I am no longer maintaining this project and can look for other similar projects to replace it
+
 # For Englist User
 ### Why not write in English? Because there are hardly any English-speaking users, and my English is very poor.
 
@@ -79,10 +82,6 @@ tip:如果再次弹出两个应用，可能是因为你的启动哈希无法自�
 ##### 请发起一个 issues 让我知道(不接受小白问题,比如XXX软件过不去)
 
 ##### (有什么问题可以带上日志找我,会尽力回复的. 非全职折腾,工作日不一定回复)
-##### 欢迎咸鱼 技术小白琳璎 或者爱发电 linying2024 付费投喂
-
-#### 爱发电 ifdian.net/a/linying2024
-#### Q群 419239345
 
 ### 欢迎 `Pull requests` 贡献代码帮助我做的更好 / Welcome 'Pull requests' to contribute code to help me do better
 
